@@ -11,6 +11,9 @@ class TryoutPackage extends Model
         'nama',
         'deskripsi',
         'jenis_ujian',
+        'group',
+        'category',
+        'attempt_limit',
         'durasi_menit',
         'is_active',
         'mulai_at',
@@ -30,10 +33,7 @@ class TryoutPackage extends Model
 
     public function questions()
     {
-        return $this->belongsToMany(Question::class, 'tryout_package_questions')
-                    ->withPivot('urutan')
-                    ->orderBy('tryout_package_questions.urutan')
-                    ->withTimestamps();
+        return $this->hasMany(Question::class, 'tryout_package_id')->orderBy('urutan');
     }
 
     public function examSessions()
@@ -44,6 +44,11 @@ class TryoutPackage extends Model
     public function results()
     {
         return $this->hasMany(Result::class);
+    }
+
+    public function packageAttempts()
+    {
+        return $this->hasMany(PackageAttempt::class, 'package_id');
     }
 
     public function isAvailable(): bool

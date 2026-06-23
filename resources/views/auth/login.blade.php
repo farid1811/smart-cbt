@@ -268,53 +268,6 @@
         .btn-login:active { transform: scale(0.995); }
         .btn-login:disabled { opacity: 0.65; cursor: not-allowed; transform: none; }
 
-        /* Demo credentials */
-        .demo-info {
-            margin-top: 1.5rem;
-            padding: 0.85rem 1rem;
-            background: #F1F3FB;
-            border: 1px solid #D9DEEE;
-            border-radius: var(--radius);
-            font-size: 0.75rem;
-            color: var(--primary);
-            line-height: 1.6;
-        }
-
-        .demo-info .demo-title {
-            font-weight: 700;
-            margin-bottom: 0.35rem;
-            font-size: 0.6875rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-        }
-
-        .demo-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .demo-cred {
-            font-family: 'SF Mono', 'Fira Code', monospace;
-            font-size: 0.72rem;
-            background: rgba(30,42,120,0.06);
-            padding: 0.15rem 0.45rem;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: 1px dashed rgba(30,42,120,0.15);
-        }
-
-        .demo-cred:hover {
-            background: var(--primary);
-            color: #fff;
-        }
-
         /* Footer */
         .login-footer {
             text-align: center;
@@ -355,26 +308,25 @@
             <form method="POST" action="{{ $isAdmin ? route('admin.login.post') : route('login.post') }}" id="loginForm">
                 @csrf
 
-                <!-- Email -->
+                <!-- Username -->
                 <div class="form-group">
-                    <label class="form-label" for="email">Alamat Email</label>
+                    <label class="form-label" for="username">Username</label>
                     <div class="input-wrap">
                         <span class="input-icon">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                         </span>
                         <input
-                            type="email"
-                            id="email"
-                            name="email"
-                            class="form-input {{ $errors->has('email') ? 'is-invalid' : '' }}"
-                            value="{{ old('email') }}"
-                            placeholder="email@contoh.com"
-                            autocomplete="email"
+                            type="text"
+                            id="username"
+                            name="username"
+                            class="form-input {{ $errors->has('username') ? 'is-invalid' : '' }}"
+                            value="{{ old('username') }}"
+                            placeholder="Masukkan username Anda"
                             required
                             autofocus
                         >
                     </div>
-                    @error('email')
+                    @error('username')
                         <div class="form-error">
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                             {{ $message }}
@@ -416,26 +368,6 @@
                     <span id="btnText">Masuk</span>
                 </button>
             </form>
-
-            <!-- Demo credentials -->
-            <div class="demo-info">
-                <div class="demo-title">🔑 Akun Demo</div>
-                @if($isAdmin)
-                    <div class="demo-row">
-                        <span>Admin</span>
-                        <span class="demo-cred" onclick="fillCredential('admin@smartcbt.com','password')" title="Klik untuk isi otomatis">admin@smartcbt.com / password</span>
-                    </div>
-                @else
-                    <div class="demo-row">
-                        <span>Peserta SKD</span>
-                        <span class="demo-cred" onclick="fillCredential('peserta@smartcbt.com','password')" title="Klik untuk isi otomatis">peserta@smartcbt.com / password</span>
-                    </div>
-                    <div class="demo-row" style="margin-top:0.35rem;">
-                        <span>Peserta SNBT</span>
-                        <span class="demo-cred" onclick="fillCredential('peserta2@smartcbt.com','password')" title="Klik untuk isi otomatis">peserta2@smartcbt.com / password</span>
-                    </div>
-                @endif
-            </div>
         </div>
 
         <div class="login-footer">Smart CBT Bimbel Plano &copy; {{ date('Y') }} — Premium Testing System</div>
@@ -463,13 +395,6 @@
             input.type = 'password';
             icon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
         }
-    }
-
-    // Demo credential fill
-    function fillCredential(email, password) {
-        document.getElementById('email').value = email;
-        document.getElementById('password').value = password;
-        document.getElementById('email').focus();
     }
     </script>
 </body>

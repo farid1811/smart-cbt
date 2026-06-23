@@ -1,19 +1,23 @@
 @extends('admin.layouts.app')
-@section('title', 'Paket Tryout')
+@section('title', request('type') === 'drill' ? 'Paket Drill Soal' : (request('type') === 'tryout' ? 'Paket Tryout' : 'Semua Paket Ujian'))
 @section('topbar-actions')
-    <a href="{{ route('admin.tryouts.create') }}" class="btn btn-primary">+ Buat Paket</a>
+    <a href="{{ route('admin.tryouts.create', ['type' => request('type')]) }}" class="btn btn-primary">+ Buat Paket</a>
 @endsection
 
 @section('content')
 <div class="table-card">
     <div class="table-header">
-        <h3 style="font-weight: 700;">Daftar Paket Tryout</h3>
+        <h3 style="font-weight: 700;">
+            {{ request('type') === 'drill' ? 'Daftar Paket Drill Soal' : (request('type') === 'tryout' ? 'Daftar Paket Tryout' : 'Daftar Semua Paket Ujian') }}
+        </h3>
     </div>
     <table>
         <thead>
             <tr>
                 <th>#</th>
                 <th>Nama Paket</th>
+                <th>Program / Kategori</th>
+                <th style="text-align:center;">Batas Percobaan</th>
                 <th>Durasi</th>
                 <th>Jumlah Soal</th>
                 <th>Status</th>
@@ -34,6 +38,15 @@
                     </span><br>
                     <strong style="color: var(--text);">{{ $p->nama }}</strong><br>
                     <small style="color:var(--text-muted);">{{ Str::limit($p->deskripsi, 60) }}</small>
+                </td>
+                <td>
+                    <span style="font-weight:600;color:var(--text);">{{ $p->group }}</span>
+                    <div style="font-size:0.75rem;color:var(--text-muted);">{{ $p->category }}</div>
+                </td>
+                <td style="text-align:center;">
+                    <span class="badge" style="background:var(--background-light);color:var(--text);border-color:var(--border);font-weight:600;">
+                        {{ $p->attempt_limit }}x
+                    </span>
                 </td>
                 <td>{{ $p->durasi_menit }} Menit</td>
                 <td>{{ $p->questions_count }} Soal</td>
@@ -66,10 +79,10 @@
                 </td>
             </tr>
             @empty
-            <tr><td colspan="7"><div class="empty-state"><p style="font-weight: 500;">Belum ada paket tryout.</p></div></td></tr>
+            <tr><td colspan="9"><div class="empty-state"><p style="font-weight: 500;">Belum ada paket.</p></div></td></tr>
             @endforelse
         </tbody>
     </table>
-    <div>{{ $packages->links() }}</div>
+    <div style="padding:1rem;">{{ $packages->links() }}</div>
 </div>
 @endsection

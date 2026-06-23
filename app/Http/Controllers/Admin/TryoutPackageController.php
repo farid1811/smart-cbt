@@ -10,9 +10,13 @@ use Illuminate\Http\Request;
 
 class TryoutPackageController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $packages = TryoutPackage::withCount('questions')->latest()->paginate(10);
+        $query = TryoutPackage::query();
+        if ($request->filled('type')) {
+            $query->where('jenis_ujian', $request->type);
+        }
+        $packages = $query->withCount('questions')->latest()->paginate(10)->withQueryString();
         return view('admin.tryouts.index', compact('packages'));
     }
 
@@ -27,6 +31,9 @@ class TryoutPackageController extends Controller
             'nama'                 => 'required|string|max:255',
             'deskripsi'            => 'nullable|string',
             'jenis_ujian'          => 'required|in:tryout,drill',
+            'group'                => 'required|in:SKD,SNBT',
+            'category'             => 'required|string|max:50',
+            'attempt_limit'        => 'required|integer|min:1',
             'durasi_menit'         => 'required|integer|min:10|max:300',
             'is_active'            => 'boolean',
             'mulai_at'             => 'nullable|date',
@@ -40,7 +47,7 @@ class TryoutPackageController extends Controller
         $validated['is_active'] = $request->has('is_active');
         $validated['seb_browser_lockdown'] = $request->has('seb_browser_lockdown');
         TryoutPackage::create($validated);
-        return redirect()->route('admin.tryouts.index')->with('success', 'Paket ujian berhasil dibuat.');
+        return redirect()->route('admin.tryouts.index', ['type' => $validated['jenis_ujian']])->with('success', 'Paket ujian berhasil dibuat.');
     }
 
     public function show(TryoutPackage $tryout)
@@ -61,6 +68,9 @@ class TryoutPackageController extends Controller
             'nama'                 => 'required|string|max:255',
             'deskripsi'            => 'nullable|string',
             'jenis_ujian'          => 'required|in:tryout,drill',
+            'group'                => 'required|in:SKD,SNBT',
+            'category'             => 'required|string|max:50',
+            'attempt_limit'        => 'required|integer|min:1',
             'durasi_menit'         => 'required|integer|min:10|max:300',
             'is_active'            => 'boolean',
             'mulai_at'             => 'nullable|date',
@@ -74,13 +84,14 @@ class TryoutPackageController extends Controller
         $validated['is_active'] = $request->has('is_active');
         $validated['seb_browser_lockdown'] = $request->has('seb_browser_lockdown');
         $tryout->update($validated);
-        return redirect()->route('admin.tryouts.index')->with('success', 'Paket ujian berhasil diperbarui.');
+        return redirect()->route('admin.tryouts.index', ['type' => $validated['jenis_ujian']])->with('success', 'Paket ujian berhasil diperbarui.');
     }
 
     public function destroy(TryoutPackage $tryout)
     {
+        $type = $tryout->jenis_ujian;
         $tryout->delete();
-        return redirect()->route('admin.tryouts.index')->with('success', 'Paket tryout berhasil dihapus.');
+        return redirect()->route('admin.tryouts.index', ['type' => $type])->with('success', 'Paket tryout berhasil dihapus.');
     }
 
     // Tambah soal ke paket (AJAX)
@@ -88,12 +99,16 @@ class TryoutPackageController extends Controller
     {
         $request->validate(['question_id' => 'required|exists:questions,id']);
 
-        if ($tryout->questions()->where('question_id', $request->question_id)->exists()) {
+        $question = Question::findOrFail($request->question_id);
+        if ($question->tryout_package_id === $tryout->id) {
             return response()->json(['message' => 'Soal sudah ada di paket ini.'], 422);
         }
 
-        $maxUrutan = $tryout->questions()->max('tryout_package_questions.urutan') ?? 0;
-        $tryout->questions()->attach($request->question_id, ['urutan' => $maxUrutan + 1]);
+        $maxUrutan = $tryout->questions()->max('urutan') ?? 0;
+        $question->update([
+            'tryout_package_id' => $tryout->id,
+            'urutan' => $maxUrutan + 1
+        ]);
 
         return response()->json(['message' => 'Soal berhasil ditambahkan.', 'total' => $tryout->questions()->count()]);
     }
@@ -102,7 +117,8 @@ class TryoutPackageController extends Controller
     public function removeQuestion(Request $request, TryoutPackage $tryout)
     {
         $request->validate(['question_id' => 'required|exists:questions,id']);
-        $tryout->questions()->detach($request->question_id);
+        $question = Question::findOrFail($request->question_id);
+        $question->delete(); // Soal dihapus karena tidak ada bank soal global lagi
         return response()->json(['message' => 'Soal berhasil dihapus.', 'total' => $tryout->questions()->count()]);
     }
 

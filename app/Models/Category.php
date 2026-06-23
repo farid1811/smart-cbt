@@ -6,15 +6,25 @@ use Illuminate\Database\Eloquent\Model;
 
 class Category extends Model
 {
-    protected $fillable = ['name', 'kode', 'deskripsi', 'group_id'];
+    protected $fillable = ['name', 'question_code_id'];
 
-    public function group()
+    public function questionCode()
     {
-        return $this->belongsTo(Group::class);
+        return $this->belongsTo(QuestionCode::class, 'question_code_id');
+    }
+
+    public function subCategories()
+    {
+        return $this->hasMany(SubCategory::class);
     }
 
     public function questions()
     {
         return $this->hasMany(Question::class);
+    }
+
+    public function learningModules()
+    {
+        return $this->hasMany(LearningModule::class);
     }
 }

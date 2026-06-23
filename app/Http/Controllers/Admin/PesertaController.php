@@ -16,13 +16,14 @@ class PesertaController extends Controller
      */
     public function index(Request $request)
     {
-        $query = User::where('role', 'peserta')->with('group');
+        $query = User::where('role', 'peserta')->with(['group', 'assignedPackage']);
 
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('username', 'like', "%{$search}%")
                   ->orWhere('no_peserta', 'like', "%{$search}%")
                   ->orWhere('no_hp', 'like', "%{$search}%");
             });
@@ -37,7 +38,7 @@ class PesertaController extends Controller
         }
 
         $peserta = $query->withCount('examSessions')->latest()->paginate(20);
-        $groups = Group::all();
+        $groups = \App\Models\Group::all();
 
         return view('admin.peserta.index', compact('peserta', 'groups'));
     }
@@ -47,8 +48,9 @@ class PesertaController extends Controller
      */
     public function create()
     {
-        $groups = Group::all();
-        return view('admin.peserta.create', compact('groups'));
+        $groups = \App\Models\Group::all();
+        $packages = \App\Models\TryoutPackage::where('is_active', true)->get();
+        return view('admin.peserta.create', compact('groups', 'packages'));
     }
 
     /**
@@ -58,33 +60,41 @@ class PesertaController extends Controller
     {
         $validated = $request->validate([
             'name'       => 'required|string|max:100',
-            'email'      => 'required|email|unique:users,email|max:150',
+            'email'      => 'nullable|email|unique:users,email|max:150',
+            'username'   => 'required|string|max:100|unique:users,username',
             'no_peserta' => 'nullable|string|max:30|unique:users,no_peserta',
             'no_hp'      => 'nullable|string|max:20',
-            'password'   => ['required', 'confirmed', Password::min(6)],
+            'password'   => ['required', 'confirmed', \Illuminate\Validation\Rules\Password::min(6)],
             'group_id'   => 'required|exists:groups,id',
+            'category'   => 'required|string|max:50',
+            'assigned_package_id' => 'nullable|exists:tryout_packages,id',
             'is_active'  => 'nullable|boolean',
         ], [
             'name.required'       => 'Nama wajib diisi.',
-            'email.required'      => 'Email wajib diisi.',
             'email.email'         => 'Format email tidak valid.',
             'email.unique'        => 'Email sudah digunakan oleh peserta lain.',
+            'username.required'   => 'Username wajib diisi.',
+            'username.unique'     => 'Username sudah digunakan.',
             'no_peserta.unique'   => 'Nomor peserta sudah digunakan.',
             'password.required'   => 'Password wajib diisi.',
             'password.confirmed'  => 'Konfirmasi password tidak cocok.',
             'password.min'        => 'Password minimal 6 karakter.',
             'group_id.required'   => 'Grup wajib dipilih.',
             'group_id.exists'     => 'Grup tidak valid.',
+            'category.required'   => 'Kategori wajib dipilih.',
         ]);
 
         User::create([
             'name'       => $validated['name'],
-            'email'      => $validated['email'],
+            'email'      => $validated['email'] ?? null,
+            'username'   => $validated['username'],
             'no_peserta' => $validated['no_peserta'] ?? null,
             'no_hp'      => $validated['no_hp'] ?? null,
             'password'   => Hash::make($validated['password']),
             'role'       => 'peserta',
             'group_id'   => $validated['group_id'],
+            'category'   => $validated['category'],
+            'assigned_package_id' => $validated['assigned_package_id'] ?? null,
             'is_active'  => $request->boolean('is_active', true),
         ]);
 
@@ -98,9 +108,10 @@ class PesertaController extends Controller
     public function edit(User $peserta)
     {
         abort_if($peserta->role !== 'peserta', 404);
-        $groups = Group::all();
+        $groups = \App\Models\Group::all();
+        $packages = \App\Models\TryoutPackage::where('is_active', true)->get();
 
-        return view('admin.peserta.edit', compact('peserta', 'groups'));
+        return view('admin.peserta.edit', compact('peserta', 'groups', 'packages'));
     }
 
     /**
@@ -112,27 +123,35 @@ class PesertaController extends Controller
 
         $validated = $request->validate([
             'name'       => 'required|string|max:100',
-            'email'      => "required|email|unique:users,email,{$peserta->id}|max:150",
+            'email'      => "nullable|email|unique:users,email,{$peserta->id}|max:150",
+            'username'   => "required|string|max:100|unique:users,username,{$peserta->id}",
             'no_peserta' => "nullable|string|max:30|unique:users,no_peserta,{$peserta->id}",
             'no_hp'      => 'nullable|string|max:20',
             'group_id'   => 'required|exists:groups,id',
+            'category'   => 'required|string|max:50',
+            'assigned_package_id' => 'nullable|exists:tryout_packages,id',
             'is_active'  => 'nullable|boolean',
         ], [
             'name.required'     => 'Nama wajib diisi.',
-            'email.required'    => 'Email wajib diisi.',
             'email.email'       => 'Format email tidak valid.',
             'email.unique'      => 'Email sudah digunakan oleh peserta lain.',
+            'username.required' => 'Username wajib diisi.',
+            'username.unique'   => 'Username sudah digunakan.',
             'no_peserta.unique' => 'Nomor peserta sudah digunakan.',
             'group_id.required' => 'Grup wajib dipilih.',
             'group_id.exists'   => 'Grup tidak valid.',
+            'category.required' => 'Kategori wajib dipilih.',
         ]);
 
         $peserta->update([
             'name'       => $validated['name'],
-            'email'      => $validated['email'],
+            'email'      => $validated['email'] ?? null,
+            'username'   => $validated['username'],
             'no_peserta' => $validated['no_peserta'] ?? null,
             'no_hp'      => $validated['no_hp'] ?? null,
             'group_id'   => $validated['group_id'],
+            'category'   => $validated['category'],
+            'assigned_package_id' => $validated['assigned_package_id'] ?? null,
             'is_active'  => $request->boolean('is_active', true),
         ]);
 

@@ -1,39 +1,61 @@
 @extends('admin.layouts.app')
-@section('title', 'Buat Paket Tryout')
+@section('title', request('type') === 'drill' ? 'Buat Paket Drill Soal' : 'Buat Paket Tryout')
 
 @section('content')
-<div class="form-card">
-    <h3>Buat Paket Tryout Baru</h3>
+<div class="form-card" style="max-width: 680px; margin: 0 auto;">
+    <h3>{{ request('type') === 'drill' ? 'Buat Paket Drill Soal Baru' : 'Buat Paket Tryout Baru' }}</h3>
     <form method="POST" action="{{ route('admin.tryouts.store') }}">
         @csrf
+
+        {{-- Jenis Ujian --}}
+        <input type="hidden" name="jenis_ujian" value="{{ old('jenis_ujian', request('type', 'tryout')) }}">
+
+        {{-- Nama Paket --}}
         <div class="form-group">
-            <label>Nama Paket</label>
-            <input type="text" name="nama" class="form-control" value="{{ old('nama') }}" placeholder="Tryout SKD CPNS #1" required>
+            <label>Nama Paket <span style="color:#ef4444;">*</span></label>
+            <input type="text" name="nama" class="form-control" value="{{ old('nama') }}" placeholder="Contoh: Tryout SKD CPNS #1 atau Drill Soal Kognitif SNBT" required>
             @error('nama')<p class="form-error">{{ $message }}</p>@enderror
         </div>
+
+        {{-- Deskripsi --}}
         <div class="form-group">
             <label>Deskripsi</label>
-            <textarea name="deskripsi" class="form-control" placeholder="Deskripsi paket tryout...">{{ old('deskripsi') }}</textarea>
+            <textarea name="deskripsi" class="form-control" placeholder="Deskripsi paket..." rows="3">{{ old('deskripsi') }}</textarea>
         </div>
+
+        {{-- Program/Grup, Kategori & Batas Percobaan --}}
+        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:1rem; margin-bottom:1rem;">
+            <div class="form-group" style="margin-bottom:0;">
+                <label>Program / Grup <span style="color:#ef4444;">*</span></label>
+                <select name="group" id="groupSelect" class="form-control @error('group') is-invalid @enderror" required onchange="updateCategories()">
+                    <option value="">-- Pilih --</option>
+                    <option value="SKD" {{ old('group') === 'SKD' ? 'selected' : '' }}>SKD</option>
+                    <option value="SNBT" {{ old('group') === 'SNBT' ? 'selected' : '' }}>SNBT</option>
+                </select>
+                @error('group')<p class="form-error">{{ $message }}</p>@enderror
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+                <label>Kategori <span style="color:#ef4444;">*</span></label>
+                <select name="category" id="categorySelect" class="form-control @error('category') is-invalid @enderror" required>
+                    <option value="">-- Pilih --</option>
+                </select>
+                @error('category')<p class="form-error">{{ $message }}</p>@enderror
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+                <label>Batas Percobaan <span style="color:#ef4444;">*</span></label>
+                <input type="number" name="attempt_limit" class="form-control @error('attempt_limit') is-invalid @enderror" value="{{ old('attempt_limit', 2) }}" min="1" required>
+                @error('attempt_limit')<p class="form-error">{{ $message }}</p>@enderror
+            </div>
+        </div>
+
         <div class="form-row">
             <div class="form-group">
-                <label>Jenis Ujian</label>
-                <select name="jenis_ujian" class="form-control" required>
-                    <option value="tryout" {{ old('jenis_ujian') === 'tryout' ? 'selected' : '' }}>Tryout</option>
-                    <option value="drill" {{ old('jenis_ujian') === 'drill' ? 'selected' : '' }}>Drill Soal</option>
-                </select>
-                @error('jenis_ujian')<p class="form-error">{{ $message }}</p>@enderror
-            </div>
-            <div class="form-group">
-                <label>Durasi (menit)</label>
+                <label>Durasi (menit) <span style="color:#ef4444;">*</span></label>
                 <input type="number" name="durasi_menit" class="form-control" value="{{ old('durasi_menit', 90) }}" min="10" max="300" required>
                 @error('durasi_menit')<p class="form-error">{{ $message }}</p>@enderror
             </div>
-        </div>
-
-        <div class="form-row">
             <div class="form-group">
-                <label>Mode Ujian</label>
+                <label>Mode Ujian <span style="color:#ef4444;">*</span></label>
                 <select name="exam_mode" id="examMode" class="form-control" required onchange="toggleSebFields()">
                     <option value="normal" {{ old('exam_mode', 'normal') === 'normal' ? 'selected' : '' }}>Normal (Bisa diakses browser biasa)</option>
                     <option value="seb" {{ old('exam_mode') === 'seb' ? 'selected' : '' }}>Safe Exam Browser (SEB)</option>
@@ -43,7 +65,7 @@
         </div>
 
         <div id="sebFields" style="display: {{ old('exam_mode') === 'seb' ? 'block' : 'none' }}; border: 1px solid var(--border); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; background: #fafafa;">
-            <h4 style="margin-bottom:0.75rem; color:var(--primary); font-weight:700;">Safe Exam Browser (SEB) Settings</h4>
+            <h4 style="margin-bottom:0.75rem; color:var(--primary); font-weight:700; font-size:0.9rem;">Safe Exam Browser (SEB) Settings</h4>
             <div class="form-group">
                 <label>URL Ujian (Mulai)</label>
                 <input type="text" name="seb_url" class="form-control" value="{{ old('seb_url') }}" placeholder="Contoh: http://localhost:8000/peserta/tryout/1/mulai (Kosongkan untuk otomatis)">
@@ -82,7 +104,7 @@
         </div>
         <div class="form-actions">
             <button type="submit" class="btn btn-primary">Buat Paket</button>
-            <a href="{{ route('admin.tryouts.index') }}" class="btn btn-secondary">Batal</a>
+            <a href="{{ route('admin.tryouts.index', ['type' => request('type')]) }}" class="btn btn-secondary">Batal</a>
         </div>
     </form>
 </div>
@@ -99,5 +121,33 @@ function toggleSebFields() {
         sebFields.style.display = 'none';
     }
 }
+
+const categoriesByGroup = {
+    SKD: ['CPNS', 'Kedinasan'],
+    SNBT: ['SNBT']
+};
+
+function updateCategories() {
+    const group = document.getElementById('groupSelect').value;
+    const categorySelect = document.getElementById('categorySelect');
+    const oldCategory = "{{ old('category') }}";
+    
+    categorySelect.innerHTML = '<option value="">-- Pilih --</option>';
+    
+    if (group && categoriesByGroup[group]) {
+        categoriesByGroup[group].forEach(cat => {
+            const opt = document.createElement('option');
+            opt.value = cat;
+            opt.textContent = cat;
+            if (oldCategory === cat) opt.selected = true;
+            categorySelect.appendChild(opt);
+        });
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    updateCategories();
+    toggleSebFields();
+});
 </script>
 @endpush

@@ -1,152 +1,444 @@
 @extends('admin.layouts.app')
-@section('title', 'Bank Soal')
+@section('title', 'Daftar Soal')
+
 @section('topbar-actions')
-    <div style="display:flex;gap:0.5rem;">
-        <button type="button" class="btn btn-secondary" onclick="openImportModal()">Import PDF</button>
-        <a href="{{ route('admin.questions.create') }}" class="btn btn-primary">+ Tambah Soal</a>
+    <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+        <button onclick="openModal('deleteByGroupModal')" class="btn btn-danger" style="font-weight:600;">🗑️ Hapus per Kategori</button>
+        <a href="{{ route('admin.questions.importForm') }}" class="btn btn-secondary" style="font-weight:600;">Import Word (DOCX)</a>
+        <a href="{{ route('admin.questions.create', ['tryout_package_id' => request('tryout_package_id')]) }}" class="btn btn-primary" style="font-weight:700;">+ Tambah Soal</a>
     </div>
 @endsection
 
 @section('content')
+<style>
+    .modal-backdrop {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(15, 23, 42, 0.6);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1050;
+        backdrop-filter: blur(4px);
+    }
+    .modal-backdrop.show {
+        display: flex;
+    }
+    .modal-box {
+        background: #ffffff;
+        border-radius: 12px;
+        width: 100%;
+        max-width: 500px;
+        box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+    .modal-header {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #f8fafc;
+    }
+    .modal-header h3 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #0f172a;
+    }
+    .modal-close {
+        background: none;
+        border: none;
+        color: #94a3b8;
+        font-size: 1.5rem;
+        cursor: pointer;
+    }
+    .modal-body {
+        padding: 1.5rem;
+    }
+    .modal-footer {
+        padding: 1rem 1.5rem;
+        border-top: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+        background: #f8fafc;
+    }
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        font-size: 0.875rem;
+        margin-bottom: 0.5rem;
+        color: #334155;
+    }
+    .form-group select {
+        width: 100%;
+        padding: 0.625rem;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        font-size: 0.9rem;
+    }
+    .badge-code {
+        background: #eff6ff;
+        color: #1e40af;
+        border: 1px solid #bfdbfe;
+        font-weight: 700;
+        padding: 0.2rem 0.5rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+    }
+</style>
+
 {{-- Filter Bar --}}
-<form method="GET" class="filter-bar">
-    <input type="text" name="search" class="form-control" placeholder="Cari soal..." value="{{ request('search') }}">
-    <select name="category_id" class="form-control" style="max-width:180px;">
-        <option value="">Semua Kategori</option>
-        @foreach($categories as $cat)
-            <option value="{{ $cat->id }}" {{ request('category_id') == $cat->id ? 'selected' : '' }}>{{ $cat->kode }} — {{ $cat->name }}</option>
+<form method="GET" class="filter-bar" style="display:flex; flex-wrap:wrap; gap:0.5rem; background:#fff; padding:1rem; border-radius:10px; box-shadow:0 1px 3px rgba(0,0,0,0.05); margin-bottom:1.5rem; align-items:center;">
+    <input type="text" name="search" class="form-control" placeholder="Cari soal..." value="{{ request('search') }}" style="flex:1; min-width:200px;">
+    
+    <select name="tryout_package_id" class="form-control" style="max-width:180px;">
+        <option value="">Semua Paket</option>
+        @foreach($packages as $p)
+            <option value="{{ $p->id }}" {{ request('tryout_package_id') == $p->id ? 'selected' : '' }}>[{{ strtoupper($p->jenis_ujian) }}] {{ $p->nama }}</option>
         @endforeach
     </select>
-    <select name="tingkat_kesulitan" class="form-control" style="max-width:150px;">
-        <option value="">Semua Tingkat</option>
-        <option value="mudah"  {{ request('tingkat_kesulitan') == 'mudah'  ? 'selected' : '' }}>Mudah</option>
-        <option value="sedang" {{ request('tingkat_kesulitan') == 'sedang' ? 'selected' : '' }}>Sedang</option>
-        <option value="sulit"  {{ request('tingkat_kesulitan') == 'sulit'  ? 'selected' : '' }}>Sulit</option>
+
+    <select name="group_id" id="group_filter" class="form-control" style="max-width:130px;">
+        <option value="">Semua Grup</option>
+        @foreach($groups as $grp)
+            <option value="{{ $grp->id }}" {{ request('group_id') == $grp->id ? 'selected' : '' }}>{{ $grp->name }}</option>
+        @endforeach
     </select>
+
+    <select name="question_code_id" id="code_filter" class="form-control" style="max-width:140px;" disabled>
+        <option value="">Semua Kode</option>
+    </select>
+
+    <select name="category_id" id="category_filter" class="form-control" style="max-width:150px;" disabled>
+        <option value="">Semua Kategori</option>
+    </select>
+
+    <select name="sub_category_id" id="subcategory_filter" class="form-control" style="max-width:150px;" disabled>
+        <option value="">Semua Sub Kategori</option>
+    </select>
+
     <button type="submit" class="btn btn-secondary">Filter</button>
-    @if(request()->hasAny(['search','category_id','tingkat_kesulitan']))
+    @if(request()->hasAny(['search','tryout_package_id','group_id','question_code_id','category_id','sub_category_id']))
         <a href="{{ route('admin.questions.index') }}" class="btn btn-secondary">Reset</a>
     @endif
 </form>
 
-<div class="table-card">
-    <div class="table-header">
-        <h3 style="font-weight:700;">Daftar Soal ({{ $questions->total() }})</h3>
+<!-- Bulk Action Toolbar -->
+<div id="bulk-action-bar" style="display:none; align-items:center; justify-content:space-between; padding:0.85rem 1.25rem; background:#fef2f2; border:1px solid #fca5a5; border-radius:8px; margin-bottom:1.5rem; animation: fadeUp 0.2s ease;">
+    <div style="display:flex; align-items:center; gap:0.5rem;">
+        <span style="font-size:0.9rem; color:#b91c1c; font-weight:700;"><span id="selected-count">0</span> soal terpilih</span>
     </div>
-    <table>
+    <button type="button" onclick="confirmBulkDelete()" class="btn btn-danger btn-sm" style="font-weight:700; padding:0.4rem 1rem;">
+        🗑️ Hapus Massal Soal Terpilih
+    </button>
+</div>
+
+<div class="table-card" style="background:#fff; border-radius:12px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);">
+    <div class="table-header" style="padding: 1.25rem 1.5rem; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center;">
+        <h3 style="font-weight:800; color:#0f172a; margin:0;">Daftar Soal ({{ $questions->total() }})</h3>
+        <div style="font-size:0.85rem; color:#64748b;">Menampilkan {{ $questions->firstItem() ?? 0 }} - {{ $questions->lastItem() ?? 0 }} dari {{ $questions->total() }} soal</div>
+    </div>
+    <table style="width:100%; border-collapse:collapse;">
         <thead>
-            <tr>
-                <th>#</th>
-                <th>Soal</th>
-                <th>Kategori</th>
-                <th>Tingkat</th>
-                <th>Jawaban</th>
-                <th>Aksi</th>
+            <tr style="border-bottom:2px solid #f1f5f9; text-align:left; background:#f8fafc;">
+                <th style="padding:1rem; width:40px; text-align:center;">
+                    <input type="checkbox" id="select-all" style="width:16px; height:16px; accent-color:#1e40af; cursor:pointer;">
+                </th>
+                <th style="padding:1rem; width:50px;">#</th>
+                <th style="padding:1rem;">Soal</th>
+                <th style="padding:1rem;">Hierarki Kategori</th>
+                <th style="padding:1rem; width:80px; text-align:center;">Kunci</th>
+                <th style="padding:1rem; width:120px; text-align:center;">Aksi</th>
             </tr>
         </thead>
         <tbody>
-            @forelse($questions as $q)
-            <tr>
-                <td style="color:var(--text-muted);">{{ $questions->firstItem() + $loop->index }}</td>
-                <td style="max-width:350px;">
-                    @if($q->image)
-                        <div style="display:flex; align-items:center; gap:0.5rem;">
-                            <img src="{{ asset($q->image) }}" alt="Soal Gambar" style="width:40px; height:40px; border-radius:4px; object-fit:cover; border:1px solid var(--border); flex-shrink:0;" onclick="window.open('{{ asset($q->image) }}')">
-                            <div>{{ Str::limit($q->soal, 80) }}</div>
+            <form id="bulk-delete-form" method="POST" action="{{ route('admin.questions.bulkDelete') }}">
+                @csrf
+                @forelse($questions as $q)
+                <tr style="border-bottom:1px solid #f1f5f9;">
+                    <td style="padding:1rem; text-align:center;">
+                        <input type="checkbox" name="ids[]" value="{{ $q->id }}" class="question-checkbox" style="width:16px; height:16px; accent-color:#1e40af; cursor:pointer;">
+                    </td>
+                    <td style="padding:1rem; color:#64748b; font-size:0.85rem;">{{ $questions->firstItem() + $loop->index }}</td>
+                    <td style="padding:1rem; max-width:380px;">
+                        <div style="display:flex; align-items:flex-start; gap:0.75rem;">
+                            @php $qImg = $q->question_image ?: $q->image; @endphp
+                            @if($qImg)
+                                <img src="{{ asset($qImg) }}" alt="Soal Gambar" style="width:44px; height:44px; border-radius:6px; object-fit:cover; border:1px solid #cbd5e1; flex-shrink:0; cursor:pointer;" onclick="window.open('{{ asset($qImg) }}')">
+                            @endif
+                            <div>
+                                <div style="font-size:0.9rem; color:#1e293b; font-weight:500; line-height:1.4;">{{ Str::limit(strip_tags($q->soal), 110) }}</div>
+                                @if($q->tryoutPackage)
+                                    <div style="font-size:0.72rem; color:#64748b; margin-top:0.25rem; font-weight:500;">
+                                        Paket: <span style="color:#1e40af; font-weight:600;">{{ $q->tryoutPackage->nama }}</span>
+                                        <span class="badge" style="font-size:0.6rem; padding:0.1rem 0.35rem; margin-left:0.25rem; background:#f1f5f9; color:#475569; border-color:#e2e8f0; font-weight:700;">
+                                            {{ strtoupper($q->tryoutPackage->jenis_ujian) }}
+                                        </span>
+                                    </div>
+                                @endif
+                            </div>
                         </div>
-                    @else
-                        {{ Str::limit($q->soal, 90) }}
-                    @endif
-                </td>
-                <td><span class="badge badge-{{ strtolower($q->category->kode) }}">{{ $q->category->kode }}</span></td>
-                <td><span class="badge badge-{{ $q->tingkat_kesulitan }}">{{ ucfirst($q->tingkat_kesulitan) }}</span></td>
-                <td><strong style="color:var(--primary-light);">{{ $q->jawaban_benar }}</strong></td>
-                <td>
-                    <div style="display:flex;gap:0.5rem;">
-                        <a href="{{ route('admin.questions.edit', $q) }}" class="btn btn-secondary btn-sm">✏️</a>
-                        <form method="POST" action="{{ route('admin.questions.destroy', $q) }}" onsubmit="return confirm('Hapus soal ini?')">
-                            @csrf @method('DELETE')
-                            <button type="submit" class="btn btn-danger btn-sm">🗑️</button>
-                        </form>
-                    </div>
-                </td>
-            </tr>
-            @empty
-            <tr><td colspan="6"><div class="empty-state"><p style="font-weight: 500;">Tidak ada soal ditemukan.</p></div></td></tr>
-            @endforelse
+                    </td>
+                    <td style="padding:1rem;">
+                        <div style="font-size:0.8rem; font-weight:700; color:#334155;">
+                            {{ $q->group->name ?? '—' }} &rarr; <span class="badge-code">{{ $q->questionCode->code ?? '—' }}</span>
+                        </div>
+                        <div style="font-size:0.75rem; color:#64748b; margin-top:0.25rem;">
+                            {{ $q->category->name ?? '—' }} &rarr; <span style="font-weight:500;">{{ $q->subCategory->name ?? '—' }}</span>
+                        </div>
+                    </td>
+                    <td style="padding:1rem; text-align:center;">
+                        <span class="badge" style="background:#eff6ff; color:#1e40af; font-weight:800; border-color:#bfdbfe; font-size:0.85rem; padding:0.25rem 0.5rem;">{{ $q->jawaban_benar }}</span>
+                    </td>
+                    <td style="padding:1rem; text-align:center;">
+                        <div style="display:flex; gap:0.4rem; justify-content:center;">
+                            <a href="{{ route('admin.questions.edit', $q) }}" class="btn btn-secondary btn-sm" style="font-weight:600; padding:0.35rem 0.65rem;">Edit</a>
+                            <button type="button" onclick="confirmSingleDelete({{ $q->id }})" class="btn btn-danger btn-sm" style="font-weight:600; padding:0.35rem 0.65rem;">Hapus</button>
+                        </div>
+                    </td>
+                </tr>
+                @empty
+                <tr><td colspan="6" style="padding:3rem; text-align:center; color:#64748b;">Tidak ada soal ditemukan.</td></tr>
+                @endforelse
+            </form>
         </tbody>
     </table>
-    <div style="padding: 1.25rem; border-top: 1px solid var(--border);">
+    <div style="padding:1rem; border-top:1px solid #f1f5f9;">
         {{ $questions->links() }}
     </div>
 </div>
 
-{{-- Modal Import PDF --}}
-<div class="modal-overlay" id="importModal" style="position: fixed; inset: 0; background: rgba(15,23,42,0.3); backdrop-filter: blur(2px); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.25s;">
-    <div class="modal" style="background: #ffffff; border: 1px solid var(--border); border-radius: 12px; padding: 1.75rem; max-width: 480px; width: 90%; transform: scale(0.95); transition: transform 0.25s; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);">
-        <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.75rem; color: var(--text);">Import Soal dari PDF</h3>
-        <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1rem; line-height: 1.5;">
-            Unggah file PDF (.pdf) berisi tabel soal pilihan ganda dengan format kolom berikut:
-        </p>
-        <div style="background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem 1rem; font-size: 0.75rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 1.25rem;">
-            <table style="width:100%; border-collapse:collapse; font-size:0.7rem; text-align:left;">
-                <thead>
-                    <tr style="border-bottom:1px solid var(--border); color:var(--text); font-weight:700;">
-                        <th style="padding:4px 0;">No</th>
-                        <th style="padding:4px 0;">Jenis</th>
-                        <th style="padding:4px 0;">Isi</th>
-                        <th style="padding:4px 0;">Jawaban</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr style="border-bottom:1px solid rgba(0,0,0,0.05);">
-                        <td style="padding:6px 0; color:var(--text); font-weight:600;">1</td>
-                        <td style="padding:6px 0; color:var(--primary); font-weight:600;">SOAL</td>
-                        <td style="padding:6px 0; color:var(--text);">Pertanyaan / Soal Ujian...</td>
-                        <td style="padding:6px 0; color:var(--text-muted); font-style:italic;">(kosong)</td>
-                    </tr>
-                    <tr style="border-bottom:1px solid rgba(0,0,0,0.05);">
-                        <td style="padding:6px 0;"></td>
-                        <td style="padding:6px 0; font-weight:600;">JAWABAN</td>
-                        <td style="padding:6px 0;">Pilihan A (Salah)</td>
-                        <td style="padding:6px 0;">0</td>
-                    </tr>
-                    <tr style="border-bottom:1px solid rgba(0,0,0,0.05);">
-                        <td style="padding:6px 0;"></td>
-                        <td style="padding:6px 0; font-weight:600;">JAWABAN</td>
-                        <td style="padding:6px 0;">Pilihan B (Benar)</td>
-                        <td style="padding:6px 0; font-weight:700; color:var(--success);">5</td>
-                    </tr>
-                </tbody>
-            </table>
+<!-- SINGLE DELETE FALLBACK FORM -->
+<form id="single-delete-form" method="POST" style="display:none;">
+    @csrf @method('DELETE')
+</form>
+
+<!-- ==============================================
+     MODALS FOR BULK DELETE BY CATEGORY/SUBCATEGORY
+     ============================================== -->
+<div id="deleteByGroupModal" class="modal-backdrop">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3>🗑️ Hapus Soal per Kategori / Sub Kategori</h3>
+            <button onclick="closeModal('deleteByGroupModal')" class="modal-close">&times;</button>
         </div>
-        <form method="POST" action="{{ route('admin.questions.import') }}" enctype="multipart/form-data">
-            @csrf
-            <div class="form-group" style="margin-bottom: 1.25rem;">
-                <label for="file_pdf" style="display: block; font-size: 0.8rem; font-weight: 600; color: var(--text); margin-bottom: 0.45rem;">Pilih File PDF (.pdf)</label>
-                <input type="file" name="file" id="file_pdf" class="form-control" accept=".pdf" required>
-            </div>
-            <div style="display: flex; gap: 0.75rem;">
-                <button type="button" class="btn btn-secondary" onclick="closeImportModal()" style="flex: 1; justify-content: center; font-weight: 600;">Batal</button>
-                <button type="submit" class="btn btn-primary" style="flex: 1; justify-content: center; font-weight: 600;">Mulai Import</button>
-            </div>
-        </form>
+        <div class="modal-body">
+            <!-- Delete by Category Form -->
+            <form method="POST" action="{{ route('admin.questions.deleteByCategory') }}" onsubmit="return confirm('PERINGATAN: Hapus semua soal dalam Kategori terpilih? Tindakan ini tidak dapat dibatalkan!')">
+                @csrf
+                <div class="form-group">
+                    <label>Hapus Semua Soal berdasarkan Kategori</label>
+                    <select name="category_id" required>
+                        <option value="">-- Pilih Kategori --</option>
+                        @foreach($categories as $cat)
+                            <option value="{{ $cat->id }}">[{{ $cat->questionCode->group->name }} - {{ $cat->questionCode->code }}] {{ $cat->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div style="display:flex; justify-content:flex-end;">
+                    <button type="submit" class="btn btn-danger btn-sm" style="font-weight:700; width:100%; justify-content:center; padding:0.6rem;">Hapus Semua Soal Kategori</button>
+                </div>
+            </form>
+
+            <hr style="border:0; border-top:1px solid #e2e8f0; margin:1.5rem 0;">
+
+            <!-- Delete by Sub Category Form -->
+            <form method="POST" action="{{ route('admin.questions.deleteBySubCategory') }}" onsubmit="return confirm('PERINGATAN: Hapus semua soal dalam Sub Kategori terpilih? Tindakan ini tidak dapat dibatalkan!')">
+                @csrf
+                <div class="form-group">
+                    <label>Hapus Semua Soal berdasarkan Sub Kategori</label>
+                    <select name="sub_category_id" required>
+                        <option value="">-- Pilih Sub Kategori --</option>
+                        @foreach($subCategories as $sub)
+                            <option value="{{ $sub->id }}">[{{ $sub->category->questionCode->group->name }} - {{ $sub->category->questionCode->code }}] {{ $sub->category->name }} &rarr; {{ $sub->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div style="display:flex; justify-content:flex-end;">
+                    <button type="submit" class="btn btn-danger btn-sm" style="font-weight:700; width:100%; justify-content:center; padding:0.6rem;">Hapus Semua Soal Sub Kategori</button>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" onclick="closeModal('deleteByGroupModal')" class="btn btn-secondary">Batal</button>
+        </div>
     </div>
 </div>
 
+<!-- ==============================================
+     SCRIPTS
+     ============================================== -->
 <script>
-function openImportModal() {
-    const modal = document.getElementById('importModal');
-    modal.style.opacity = '1';
-    modal.style.pointerEvents = 'all';
-    modal.querySelector('.modal').style.transform = 'scale(1)';
-}
+    // Checkboxes Selection Control
+    const selectAllCheckbox = document.getElementById('select-all');
+    const questionCheckboxes = document.querySelectorAll('.question-checkbox');
+    const bulkActionBar = document.getElementById('bulk-action-bar');
+    const selectedCountSpan = document.getElementById('selected-count');
 
-function closeImportModal() {
-    const modal = document.getElementById('importModal');
-    modal.style.opacity = '0';
-    modal.style.pointerEvents = 'none';
-    modal.querySelector('.modal').style.transform = 'scale(0.95)';
-}
+    function updateBulkActionBar() {
+        const checkedCheckboxes = document.querySelectorAll('.question-checkbox:checked');
+        const count = checkedCheckboxes.length;
+        selectedCountSpan.textContent = count;
+        
+        if (count > 0) {
+            bulkActionBar.style.display = 'flex';
+        } else {
+            bulkActionBar.style.display = 'none';
+        }
+    }
+
+    selectAllCheckbox.addEventListener('change', function() {
+        questionCheckboxes.forEach(cb => {
+            cb.checked = this.checked;
+        });
+        updateBulkActionBar();
+    });
+
+    questionCheckboxes.forEach(cb => {
+        cb.addEventListener('change', function() {
+            const allChecked = Array.from(questionCheckboxes).every(c => c.checked);
+            selectAllCheckbox.checked = allChecked;
+            updateBulkActionBar();
+        });
+    });
+
+    function confirmBulkDelete() {
+        if (confirm('Apakah Anda yakin ingin menghapus semua soal yang dipilih secara massal? Tindakan ini tidak dapat dibatalkan!')) {
+            document.getElementById('bulk-delete-form').submit();
+        }
+    }
+
+    function confirmSingleDelete(id) {
+        if (confirm('Hapus soal ini?')) {
+            const form = document.getElementById('single-delete-form');
+            form.action = `/admin/questions/${id}`;
+            form.submit();
+        }
+    }
+
+    // Modal Control
+    function openModal(id) {
+        document.getElementById(id).classList.add('show');
+    }
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('show');
+    }
+
+    // Dependent Filter Dropdowns Logic
+    const groupSelect = document.getElementById('group_filter');
+    const codeSelect = document.getElementById('code_filter');
+    const catSelect = document.getElementById('category_filter');
+    const subSelect = document.getElementById('subcategory_filter');
+
+    async function loadCodes(groupId, selectedCodeId = null) {
+        codeSelect.innerHTML = '<option value="">Semua Kode</option>';
+        codeSelect.disabled = true;
+        catSelect.innerHTML = '<option value="">Semua Kategori</option>';
+        catSelect.disabled = true;
+        subSelect.innerHTML = '<option value="">Semua Sub Kategori</option>';
+        subSelect.disabled = true;
+
+        if (!groupId) return;
+
+        try {
+            const response = await fetch(`/admin/api/codes/${groupId}`);
+            const codes = await response.json();
+            if (codes.length > 0) {
+                codes.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c.id;
+                    opt.textContent = `${c.code} - ${c.name}`;
+                    if (selectedCodeId && c.id == selectedCodeId) opt.selected = true;
+                    codeSelect.appendChild(opt);
+                });
+                codeSelect.disabled = false;
+                if (selectedCodeId) codeSelect.dispatchEvent(new Event('change'));
+            }
+        } catch (e) { console.error(e); }
+    }
+
+    async function loadCategories(codeId, selectedCatId = null) {
+        catSelect.innerHTML = '<option value="">Semua Kategori</option>';
+        catSelect.disabled = true;
+        subSelect.innerHTML = '<option value="">Semua Sub Kategori</option>';
+        subSelect.disabled = true;
+
+        if (!codeId) return;
+
+        try {
+            const response = await fetch(`/admin/api/categories/${codeId}`);
+            const cats = await response.json();
+            if (cats.length > 0) {
+                cats.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c.id;
+                    opt.textContent = c.name;
+                    if (selectedCatId && c.id == selectedCatId) opt.selected = true;
+                    catSelect.appendChild(opt);
+                });
+                catSelect.disabled = false;
+                if (selectedCatId) catSelect.dispatchEvent(new Event('change'));
+            }
+        } catch (e) { console.error(e); }
+    }
+
+    async function loadSubCategories(catId, selectedSubId = null) {
+        subSelect.innerHTML = '<option value="">Semua Sub Kategori</option>';
+        subSelect.disabled = true;
+
+        if (!catId) return;
+
+        try {
+            const response = await fetch(`/admin/api/subcategories/${catId}`);
+            const subs = await response.json();
+            if (subs.length > 0) {
+                subs.forEach(s => {
+                    const opt = document.createElement('option');
+                    opt.value = s.id;
+                    opt.textContent = s.name;
+                    if (selectedSubId && s.id == selectedSubId) opt.selected = true;
+                    subSelect.appendChild(opt);
+                });
+                subSelect.disabled = false;
+            }
+        } catch (e) { console.error(e); }
+    }
+
+    groupSelect.addEventListener('change', function() {
+        loadCodes(this.value);
+    });
+
+    codeSelect.addEventListener('change', function() {
+        loadCategories(this.value);
+    });
+
+    catSelect.addEventListener('change', function() {
+        loadSubCategories(this.value);
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const oldGroup = "{{ request('group_id') }}";
+        const oldCode = "{{ request('question_code_id') }}";
+        const oldCat = "{{ request('category_id') }}";
+        const oldSub = "{{ request('sub_category_id') }}";
+
+        if (oldGroup) {
+            loadCodes(oldGroup, oldCode).then(() => {
+                if (oldCode) {
+                    loadCategories(oldCode, oldCat).then(() => {
+                        if (oldCat) {
+                            loadSubCategories(oldCat, oldSub);
+                        }
+                    });
+                }
+            });
+        }
+    });
 </script>
 @endsection

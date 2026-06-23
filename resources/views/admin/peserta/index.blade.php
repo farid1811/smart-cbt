@@ -39,10 +39,10 @@
             <tr>
                 <th style="width:40px;">#</th>
                 <th>Nama Peserta</th>
-                <th>Email</th>
-                <th>No. HP</th>
+                <th>Username</th>
                 <th>Grup</th>
-                <th>Ujian</th>
+                <th>Kategori</th>
+                <th>Paket Ditugaskan</th>
                 <th style="width:90px;text-align:center;">Status</th>
                 <th style="width:180px;text-align:center;">Aksi</th>
             </tr>
@@ -58,11 +58,11 @@
                         </div>
                         <div>
                             <div style="font-weight:600;color:var(--text);">{{ $p->name }}</div>
+                            <div style="font-size:0.75rem;color:var(--text-muted);">{{ $p->email }} &middot; {{ $p->no_hp ?? '—' }}</div>
                         </div>
                     </div>
                 </td>
-                <td style="color:var(--text-muted);font-size:0.85rem;">{{ $p->email }}</td>
-                <td style="color:var(--text-muted);font-size:0.85rem;">{{ $p->no_hp ?? '—' }}</td>
+                <td><code style="font-weight:600;color:var(--primary);">{{ $p->username }}</code></td>
                 <td>
                     @if($p->group)
                         <span class="badge badge-info" style="font-weight:600;">{{ $p->group->name }}</span>
@@ -71,8 +71,18 @@
                     @endif
                 </td>
                 <td>
-                    <span style="font-weight:600;color:var(--primary);">{{ $p->exam_sessions_count }}</span>
-                    <span style="color:var(--text-muted);font-size:0.8rem;">sesi</span>
+                    @if($p->category)
+                        <span class="badge badge-warning" style="font-weight:600;background:#fffbeb;color:#d97706;border:1px solid #fde68a;">{{ $p->category }}</span>
+                    @else
+                        <span style="color:#cbd5e1;">—</span>
+                    @endif
+                </td>
+                <td>
+                    @if($p->assignedPackage)
+                        <span style="font-weight:600;font-size:0.8rem;color:var(--text);">{{ $p->assignedPackage->nama }}</span>
+                    @else
+                        <span style="color:#cbd5e1;font-size:0.8rem;">Tidak ada</span>
+                    @endif
                 </td>
                 <td style="text-align:center;">
                     @if($p->is_active)

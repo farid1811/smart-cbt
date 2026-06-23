@@ -5,7 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hasil Ujian — {{ $result->tryoutPackage->nama }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- KaTeX for Math Formula Rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false},{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}],throwOnError:false});"></script>
+
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -40,16 +46,6 @@
         }
 
         .brand { display: flex; align-items: center; gap: 0.65rem; text-decoration: none; }
-        .brand-icon {
-            width: 32px;
-            height: 32px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 8px rgba(37,99,235,0.15);
-        }
         .brand h1 { font-size: 1.1rem; font-weight: 700; color: var(--text); }
 
         .page { max-width: 860px; margin: 0 auto; padding: 2.5rem 1.5rem; }
@@ -97,14 +93,14 @@
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.03);
         }
 
-        .score-val { font-size: 2.2rem; font-weight: 800; }
+        .score-val { font-size: 1.8rem; font-weight: 800; }
         .score-lbl { font-size: 0.75rem; color: var(--text-muted); font-weight: 500; }
 
         .result-hero h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: 0.35rem; color: var(--text); }
         .result-hero p  { color: var(--text-muted); font-size: 0.875rem; }
 
         /* Category scores */
-        .cat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; margin-bottom: 2rem; }
+        .cat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 2rem; }
 
         .cat-card {
             background: var(--surface);
@@ -112,12 +108,12 @@
             border-radius: 12px;
             padding: 1.25rem;
             text-align: center;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
 
         .cat-name { font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0.35rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
         .cat-kode { font-size: 0.9rem; font-weight: 800; margin-bottom: 0.75rem; }
-        .cat-score { font-size: 1.8rem; font-weight: 800; }
+        .cat-score { font-size: 1.6rem; font-weight: 800; }
         .cat-bar { height: 6px; background: var(--surface2); border-radius: 99px; margin-top: 0.75rem; overflow: hidden; }
         .cat-bar-fill { height: 100%; border-radius: 99px; transition: width 1s ease; }
 
@@ -130,7 +126,7 @@
             border-radius: 12px;
             padding: 1rem;
             text-align: center;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
 
         .sum-val { font-size: 1.6rem; font-weight: 800; }
@@ -146,7 +142,7 @@
             border-radius: 12px;
             margin-bottom: 0.75rem;
             overflow: hidden;
-            box-shadow: 0 1px 2px 0 rgba(0,0,0,0.02);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
         }
 
         .soal-item-header {
@@ -175,19 +171,21 @@
         }
 
         .soal-item-body.open {
-            max-height: 800px;
-            padding: 1rem 1.25rem;
+            max-height: 2000px;
+            padding: 1.25rem;
             border-top: 1px solid var(--border);
+            overflow-y: auto;
         }
 
         .opsi-row {
             display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 0.75rem;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.35rem;
+            padding: 0.65rem 0.85rem;
             border-radius: 6px;
             font-size: 0.875rem;
-            margin-bottom: 0.35rem;
+            margin-bottom: 0.5rem;
             background: #ffffff;
             border: 1px solid var(--border);
             color: #334155;
@@ -212,20 +210,29 @@
             border: 1px solid var(--border);
             background: var(--surface);
             color: var(--text);
-            font-family: 'Inter', sans-serif;
         }
 
         .btn-primary { background: var(--primary); color: #fff; border-color: var(--primary); }
         .btn-primary:hover { background: var(--primary-dark); }
+        
+        .badge-code {
+            background: #eff6ff;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+            font-weight: 700;
+            padding: 0.2rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.7rem;
+        }
     </style>
 </head>
 <body>
 
 <header class="topbar">
-    <a href="{{ route('peserta.dashboard') }}" class="brand" style="display:flex;align-items:center;text-decoration:none;">
+    <a href="{{ route('peserta.dashboard') }}" class="brand">
         <img src="{{ asset('images/logo-plano.jpg') }}" alt="Bimbel Plano" style="max-height: 34px; width: auto; filter: drop-shadow(0 1px 2px rgba(30,42,120,0.05));">
     </a>
-    <span style="font-size:0.85rem;color:var(--text-muted);font-weight:500;">{{ auth()->user()->name }}</span>
+    <span style="font-size:0.85rem;color:var(--text-muted);font-weight:700;">{{ $result->user->name }}</span>
 </header>
 
 <div class="page">
@@ -233,7 +240,13 @@
     {{-- Hero Score --}}
     <div class="result-hero">
         @php
-            $pct   = $result->skor_total;
+            $isSkd = ($result->tryoutPackage->group === 'SKD');
+            $maxScore = $isSkd ? 550 : (count($result->category_scores ?? []) * 100);
+            if ($maxScore <= 0) $maxScore = 100;
+            
+            $scoreVal = $result->skor_total;
+            $pct = min(100, ($scoreVal / $maxScore) * 100);
+            
             $color = $pct >= 70 ? '#10b981' : ($pct >= 50 ? '#f59e0b' : '#f43f5e');
             $circ  = 2 * M_PI * 54;
             $offset = $circ * (1 - $pct / 100);
@@ -249,8 +262,8 @@
                     style="transition: stroke-dashoffset 1.5s ease;"/>
             </svg>
             <div class="inner">
-                <div class="score-val" style="color:{{ $color }};">{{ $pct }}%</div>
-                <div class="score-lbl">Skor Total</div>
+                <div class="score-val" style="color:{{ $color }};">{{ $scoreVal }}</div>
+                <div class="score-lbl">Skor / {{ $maxScore }}</div>
             </div>
         </div>
 
@@ -269,30 +282,31 @@
         </p>
     </div>
 
-    {{-- Per-kategori --}}
+    {{-- Detailed Score Breakdown --}}
+    <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 0.75rem;">📊 Rincian Nilai per Subtest</h3>
     <div class="cat-grid">
         @if($result->category_scores && count($result->category_scores) > 0)
-            @foreach($result->category_scores as $catId => $data)
+            @php $scoreArray = is_string($result->category_scores) ? json_decode($result->category_scores, true) : $result->category_scores; @endphp
+            @foreach($scoreArray as $codeId => $data)
             @php
                 $clr = '#1E2A78';
                 if ($data['kode'] === 'TWK') $clr = '#4f46e5';
                 elseif ($data['kode'] === 'TIU') $clr = '#10b981';
                 elseif ($data['kode'] === 'TKP') $clr = '#f59e0b';
+                
+                // percentage for visual bar
+                $pFill = $isSkd ? (($data['score'] / ($data['total'] * 5)) * 100) : $data['score'];
             @endphp
             <div class="cat-card">
                 <div class="cat-name">{{ $data['name'] }}</div>
-                <div class="cat-kode" style="color:{{ $clr }};">{{ $data['kode'] }}</div>
-                <div class="cat-score" style="color:{{ $clr }};">{{ $data['score'] }}%</div>
-                <div class="cat-bar"><div class="cat-bar-fill" style="width:{{ $data['score'] }}%;background:{{ $clr }};"></div></div>
-            </div>
-            @endforeach
-        @else
-            @foreach([['TWK','Tes Wawasan Kebangsaan','skor_twk','#4f46e5'],['TIU','Tes Intelegensia Umum','skor_tiu','#10b981'],['TKP','Tes Karakteristik Pribadi','skor_tkp','#f59e0b']] as [$kode,$nama,$field,$clr])
-            <div class="cat-card">
-                <div class="cat-name">{{ $nama }}</div>
-                <div class="cat-kode" style="color:{{ $clr }};">{{ $kode }}</div>
-                <div class="cat-score" style="color:{{ $clr }};">{{ $result->$field }}%</div>
-                <div class="cat-bar"><div class="cat-bar-fill" style="width:{{ $result->$field }}%;background:{{ $clr }};"></div></div>
+                <div class="cat-kode" style="color:{{ $clr }}; font-weight:800;">{{ $data['kode'] }}</div>
+                <div class="cat-score" style="color:{{ $clr }};">
+                    {{ $data['score'] }}<span style="font-size:1rem; font-weight:500;">{{ $isSkd ? '' : '%' }}</span>
+                </div>
+                <div style="font-size: 0.75rem; color:var(--text-muted); margin-top: 0.25rem;">
+                    B: {{ $data['benar'] }} | S: {{ $data['salah'] }} | K: {{ $data['kosong'] }}
+                </div>
+                <div class="cat-bar"><div class="cat-bar-fill" style="width:{{ $pFill }}%; background:{{ $clr }};"></div></div>
             </div>
             @endforeach
         @endif
@@ -301,11 +315,11 @@
     {{-- Summary --}}
     <div class="summary-cards">
         <div class="sum-card">
-            <div class="sum-val" style="color:#6ee7b7;">{{ $result->jumlah_benar }}</div>
+            <div class="sum-val" style="color:#10b981;">{{ $result->jumlah_benar }}</div>
             <div class="sum-lbl">✅ Jawaban Benar</div>
         </div>
         <div class="sum-card">
-            <div class="sum-val" style="color:#fda4af;">{{ $result->jumlah_salah }}</div>
+            <div class="sum-val" style="color:#ef4444;">{{ $result->jumlah_salah }}</div>
             <div class="sum-lbl">❌ Jawaban Salah</div>
         </div>
         <div class="sum-card">
@@ -316,11 +330,13 @@
 
     {{-- Pembahasan --}}
     <div class="pembahasan-section">
-        <h3>📖 Pembahasan Soal</h3>
+        <h3>📖 Pembahasan Lengkap</h3>
 
-        @foreach($result->examSession->answers->sortBy(fn($a) => $a->question->category->kode) as $i => $answer)
+        @foreach($result->examSession->answers as $i => $answer)
         @php
             $q       = $answer->question;
+            if (!$q) continue;
+            
             $benar   = $answer->isBenar();
             $kosong  = is_null($answer->jawaban);
             $status  = $kosong ? 'kosong' : ($benar ? 'benar' : 'salah');
@@ -328,7 +344,6 @@
             $mapping = $answer->options_mapping;
             $visualKeys = $mapping ? array_keys($mapping) : ['A', 'B', 'C', 'D', 'E'];
             
-            // Find visual correct option key
             $visualCorrectKey = null;
             if ($mapping) {
                 foreach ($mapping as $vK => $oK) {
@@ -344,44 +359,68 @@
         <div class="soal-item">
             <div class="soal-item-header" onclick="togglePembahasan({{ $i }})">
                 <div class="soal-status status-{{ $status }}"></div>
-                <span class="badge badge-{{ strtolower($q->category->kode) }}" style="font-size:0.7rem;padding:0.15rem 0.5rem;">{{ $q->category->kode }}</span>
-                <span style="flex:1;font-size:0.83rem;">{{ Str::limit($q->soal, 80) }}</span>
-                <span style="font-size:0.75rem;color:var(--text-muted);">
+                <span class="badge-code">{{ $q->questionCode->code ?? '—' }}</span>
+                <span style="flex:1; font-size:0.85rem; font-weight:500; color:#334155;">{{ Str::limit(strip_tags($q->soal), 70) }}</span>
+                <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">
                     @if($kosong) ⬜ Kosong
                     @elseif($benar) ✅ Benar
                     @else ❌ Salah (Pilihan: {{ $answer->jawaban }}, Kunci: {{ $visualCorrectKey }})
                     @endif
                 </span>
-                <span style="font-size:0.8rem;color:var(--text-muted);" id="arrow-{{ $i }}">▼</span>
+                <span style="font-size:0.8rem; color:var(--text-muted); font-weight:bold; margin-left:0.5rem;" id="arrow-{{ $i }}">▼</span>
             </div>
             <div class="soal-item-body" id="body-{{ $i }}">
-                <p style="font-size:0.875rem;margin-bottom:0.75rem;line-height:1.6;">{{ $q->soal }}</p>
+                <div style="font-size:0.72rem; color:var(--text-muted); font-weight:700; margin-bottom:0.5rem; text-transform:uppercase;">
+                    Kategori: {{ $q->category->name ?? '—' }} &rarr; {{ $q->subCategory->name ?? '—' }}
+                </div>
                 
-                @if($q->image)
+                <p style="font-size:0.9rem; margin-bottom:1rem; line-height:1.6; color:#0f172a; white-space: pre-wrap;">{{ $q->soal }}</p>
+                
+                @if($q->question_image || $q->image)
+                    @php $qImg = $q->question_image ?: $q->image; @endphp
                     <div style="margin-bottom: 1.25rem;">
-                        <img src="{{ asset($q->image) }}" alt="Gambar Soal" style="max-width: 100%; max-height: 350px; height: auto; border-radius: 8px; border: 1px solid var(--border); box-shadow: var(--shadow-sm);">
+                        <img src="{{ asset($qImg) }}" alt="Gambar Soal" style="max-width: 100%; max-height: 320px; height: auto; border-radius: 8px; border: 1px solid var(--border);">
                     </div>
                 @endif
 
-                @foreach($visualKeys as $visualKey)
-                @php
-                    $originalKey = ($mapping && isset($mapping[$visualKey])) ? $mapping[$visualKey] : $visualKey;
-                    $opsiText = $q->{'opsi_'.strtolower($originalKey)};
-                    if (!$opsiText) continue;
+                {{-- Option lists --}}
+                <div style="margin-bottom:1.25rem;">
+                    @foreach($visualKeys as $visualKey)
+                    @php
+                        $originalKey = ($mapping && isset($mapping[$visualKey])) ? $mapping[$visualKey] : $visualKey;
+                        $opsiText = $q->{'opsi_'.strtolower($originalKey)};
+                        if (!$opsiText) continue;
 
-                    $isBenar = $originalKey === $q->jawaban_benar;
-                    $isPilihan = $visualKey === $answer->jawaban;
-                @endphp
-                <div class="opsi-row {{ $isBenar ? 'opsi-correct' : ($isPilihan && !$isBenar ? 'opsi-wrong' : '') }}">
-                    <strong style="min-width:18px;">{{ $visualKey }}.</strong>
-                    <span>{{ $opsiText }}</span>
-                    @if($isBenar) <span style="margin-left:auto;font-size:0.7rem;color:#10b981;font-weight:600;">✓ Benar</span> @endif
-                    @if($isPilihan && !$isBenar) <span style="margin-left:auto;font-size:0.7rem;color:#ef4444;font-weight:600;">✗ Pilihan Anda</span> @endif
+                        $isCorrectOption = $originalKey === $q->jawaban_benar;
+                        $isPilihan = $visualKey === $answer->jawaban;
+                    @endphp
+                    <div class="opsi-row {{ $isCorrectOption ? 'opsi-correct' : ($isPilihan && !$isCorrectOption ? 'opsi-wrong' : '') }}">
+                        <div style="display:flex; align-items:center; width:100%;">
+                            <strong style="min-width:18px;">{{ $visualKey }}.</strong>
+                            <span>{{ $opsiText }}</span>
+                            @if($isCorrectOption) <span style="margin-left:auto; font-size:0.7rem; color:#10b981; font-weight:700;">✓ Benar</span> @endif
+                            @if($isPilihan && !$isCorrectOption) <span style="margin-left:auto; font-size:0.7rem; color:#ef4444; font-weight:700;">✗ Pilihan Anda</span> @endif
+                        </div>
+                        @php $optImg = $q->{'option_'.strtolower($originalKey).'_image'}; @endphp
+                        @if($optImg)
+                            <div style="margin-top:0.35rem; padding-left:18px;">
+                                <img src="{{ asset($optImg) }}" alt="Gambar Opsi {{ $visualKey }}" style="max-height:80px; border-radius:4px; border:1px solid var(--border);">
+                            </div>
+                        @endif
+                    </div>
+                    @endforeach
                 </div>
-                @endforeach
-                @if($q->pembahasan)
-                    <div style="margin-top:0.75rem;padding:0.75rem;background:var(--surface2);border-radius:8px;font-size:0.82rem;color:var(--text-muted);line-height:1.6;">
-                        💡 <strong>Pembahasan:</strong> {{ $q->pembahasan }}
+
+                {{-- Pembahasan --}}
+                @if($q->pembahasan || $q->explanation_image)
+                    <div style="margin-top:1rem; padding:1rem; background:#f1f5f9; border-radius:8px; font-size:0.875rem; color:#334155; line-height:1.6; border:1px solid #e2e8f0;">
+                        💡 <strong>Pembahasan:</strong>
+                        <div style="margin-top:0.35rem; white-space: pre-wrap;">{!! $q->pembahasan !!}</div>
+                        @if($q->explanation_image)
+                            <div style="margin-top:0.75rem;">
+                                <img src="{{ asset($q->explanation_image) }}" alt="Gambar Pembahasan" style="max-height:160px; border-radius:6px; border:1px solid var(--border);">
+                            </div>
+                        @endif
                     </div>
                 @endif
             </div>
@@ -391,8 +430,8 @@
 
     {{-- Actions --}}
     <div class="actions">
-        <a href="{{ route('peserta.dashboard') }}" class="btn">🏠 Dashboard</a>
-        <a href="{{ route('peserta.results.index') }}" class="btn btn-primary">📊 Riwayat Nilai</a>
+        <a href="{{ route('peserta.dashboard') }}" class="btn" style="font-weight:700;">🏠 Dashboard</a>
+        <a href="{{ route('peserta.results.index') }}" class="btn btn-primary" style="font-weight:700;">📊 Riwayat Nilai</a>
     </div>
 </div>
 
@@ -401,6 +440,8 @@ function togglePembahasan(i) {
     const body  = document.getElementById('body-' + i);
     const arrow = document.getElementById('arrow-' + i);
     const isOpen = body.classList.contains('open');
+    
+    // Toggle class
     body.classList.toggle('open');
     arrow.textContent = isOpen ? '▼' : '▲';
 }

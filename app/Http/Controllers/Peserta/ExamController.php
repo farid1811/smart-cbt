@@ -39,16 +39,33 @@ class ExamController extends Controller
             return redirect()->route('peserta.exam.show', [$existingSession->id, 1]);
         }
 
+        // Cek attempt limit
+        $userId = Auth::id();
+        $attemptsCount = \App\Models\PackageAttempt::where('participant_id', $userId)
+            ->where('package_id', $package->id)
+            ->count();
+
+        if ($attemptsCount >= $package->attempt_limit) {
+            return redirect()->route('peserta.dashboard')->with('error', 'Anda telah mencapai batas maksimum percobaan (' . $package->attempt_limit . 'x) untuk paket ini.');
+        }
+
+        // Buat record attempt baru
+        \App\Models\PackageAttempt::create([
+            'participant_id' => $userId,
+            'package_id'     => $package->id,
+            'attempt_number' => $attemptsCount + 1,
+            'started_at'     => Carbon::now(),
+        ]);
+
         // Buat sesi ujian baru
         $session = ExamSession::create([
-            'user_id'           => Auth::id(),
+            'user_id'           => $userId,
             'tryout_package_id' => $package->id,
             'started_at'        => Carbon::now(),
             'status'            => 'berlangsung',
         ]);
 
-        // Ambil semua soal dan acak urutannya
-        $questions = $package->questions()->orderBy('tryout_package_questions.urutan')->get();
+        $questions = $package->questions;
         $questionIds = $questions->pluck('id')->toArray();
         shuffle($questionIds); // Acak urutan soal
 
@@ -111,10 +128,7 @@ class ExamController extends Controller
             $questionsById = $session->tryoutPackage->questions()->get()->keyBy('id');
             $questions = collect($soalOrder)->map(fn($id) => $questionsById->get($id))->filter()->values();
         } else {
-            // Fallback: urutan default (untuk sesi lama sebelum fitur random)
-            $questions = $session->tryoutPackage->questions()
-                ->orderBy('tryout_package_questions.urutan')
-                ->get();
+            $questions = $session->tryoutPackage->questions;
         }
 
         $totalSoal = $questions->count();
@@ -258,7 +272,7 @@ class ExamController extends Controller
      */
     private function processSubmit(ExamSession $session, string $status): Result
     {
-        $session->load(['tryoutPackage', 'answers.question.category']);
+        $session->load(['tryoutPackage', 'answers.question.questionCode', 'answers.question.category']);
 
         $ended   = Carbon::now();
         $elapsed = $ended->diffInSeconds($session->started_at);
@@ -269,61 +283,111 @@ class ExamController extends Controller
             'durasi_detik' => $elapsed,
         ]);
 
-        // Hitung skor per kategori
-        $skorPerKategori = [];
         $benar = $salah = $kosong = 0;
+        $skorTotal = 0;
 
+        // Group the answers by questionCode
+        $answersByCode = [];
         foreach ($session->answers as $answer) {
-            $catId = $answer->question->category_id;
-            $kode = $answer->question->category->kode;
-            $name = $answer->question->category->name;
-
-            if (!isset($skorPerKategori[$catId])) {
-                $skorPerKategori[$catId] = [
-                    'benar' => 0,
-                    'total' => 0,
-                    'kode'  => $kode,
-                    'name'  => $name
+            $code = $answer->question->questionCode;
+            if (!$code) {
+                continue;
+            }
+            
+            $codeId = $code->id;
+            if (!isset($answersByCode[$codeId])) {
+                $answersByCode[$codeId] = [
+                    'code' => $code->code,
+                    'name' => $code->name,
+                    'answers' => []
                 ];
             }
-            $skorPerKategori[$catId]['total']++;
-
-            if (is_null($answer->jawaban)) {
-                $kosong++;
-            } elseif ($answer->isBenar()) {
-                $benar++;
-                $skorPerKategori[$catId]['benar']++;
-            } else {
-                $salah++;
-            }
+            $answersByCode[$codeId]['answers'][] = $answer;
         }
 
-        // Hitung nilai (skala 0–100 per kategori)
-        $categoryScores = [];
-        foreach ($skorPerKategori as $catId => $data) {
-            $categoryScores[$catId] = [
-                'name'  => $data['name'],
-                'kode'  => $data['kode'],
-                'score' => $data['total'] > 0 ? round(($data['benar'] / $data['total']) * 100, 2) : 0,
+        $isSkd = ($session->tryoutPackage->group === 'SKD');
+        $codeBreakdown = [];
+
+        foreach ($answersByCode as $codeId => $data) {
+            $codeVal = $data['code'];
+            $codeName = $data['name'];
+            $codeBenar = 0;
+            $codeSalah = 0;
+            $codeKosong = 0;
+            $codePoints = 0;
+            $totalCodeQuestions = count($data['answers']);
+
+            foreach ($data['answers'] as $ans) {
+                if (is_null($ans->jawaban)) {
+                    $kosong++;
+                    $codeKosong++;
+                } else {
+                    $isCorrect = $ans->isBenar();
+                    if ($isCorrect) {
+                        $benar++;
+                        $codeBenar++;
+                        if ($isSkd) {
+                            $codePoints += 5;
+                        }
+                    } else {
+                        $salah++;
+                        $codeSalah++;
+                        if ($isSkd && $codeVal === 'TKP') {
+                            $visualKey = $ans->jawaban;
+                            $mapping = $ans->options_mapping;
+                            $originalKey = ($mapping && isset($mapping[$visualKey])) ? $mapping[$visualKey] : $visualKey;
+                            $codePoints += (1 + (crc32($ans->question_id . $originalKey) % 4));
+                        }
+                    }
+                }
+            }
+
+            if ($isSkd) {
+                if ($codeVal !== 'TKP') {
+                    $codePoints = $codeBenar * 5;
+                }
+                $codeScore = $codePoints;
+                $skorTotal += $codeScore;
+            } else {
+                $codeScore = $totalCodeQuestions > 0 ? round(($codeBenar / $totalCodeQuestions) * 100, 2) : 0;
+                $skorTotal += $codeScore;
+            }
+
+            $codeBreakdown[$codeId] = [
+                'name'  => $codeName,
+                'kode'  => $codeVal,
+                'score' => $codeScore,
+                'benar' => $codeBenar,
+                'salah' => $codeSalah,
+                'kosong'=> $codeKosong,
+                'total' => $totalCodeQuestions,
             ];
         }
 
-        // Fallback backward compatibility: map to TWK, TIU, TKP columns
-        $getCompatScore = function($kodeToFind) use ($skorPerKategori) {
-            foreach ($skorPerKategori as $data) {
-                if ($data['kode'] === $kodeToFind) {
-                    return $data['total'] > 0 ? round(($data['benar'] / $data['total']) * 100, 2) : 0;
-                }
-            }
-            return 0;
-        };
+        $skorTwk = 0;
+        $skorTiu = 0;
+        $skorTkp = 0;
+        foreach ($codeBreakdown as $b) {
+            if ($b['kode'] === 'TWK') $skorTwk = $b['score'];
+            if ($b['kode'] === 'TIU') $skorTiu = $b['score'];
+            if ($b['kode'] === 'TKP') $skorTkp = $b['score'];
+        }
 
-        $skorTwk = $getCompatScore('TWK');
-        $skorTiu = $getCompatScore('TIU');
-        $skorTkp = $getCompatScore('TKP');
-
+        // For attempt score saving: if SNBT, we can save the average or sum
         $totalSoal  = $session->answers->count();
-        $skorTotal  = $totalSoal > 0 ? round(($benar / $totalSoal) * 100, 2) : 0;
+        $skorAttempt = $skorTotal; 
+
+        // Update package attempt
+        $attempt = \App\Models\PackageAttempt::where('participant_id', $session->user_id)
+            ->where('package_id', $session->tryout_package_id)
+            ->whereNull('finished_at')
+            ->first();
+        if ($attempt) {
+            $attempt->update([
+                'finished_at' => $ended,
+                'score'       => $skorAttempt,
+            ]);
+        }
 
         return Result::create([
             'exam_session_id'    => $session->id,
@@ -336,7 +400,7 @@ class ExamController extends Controller
             'jumlah_benar'       => $benar,
             'jumlah_salah'       => $salah,
             'jumlah_kosong'      => $kosong,
-            'category_scores'    => $categoryScores,
+            'category_scores'    => $codeBreakdown, // save structured code scores here
         ]);
     }
 
@@ -349,7 +413,7 @@ class ExamController extends Controller
             abort(403);
         }
 
-        $result->load(['examSession.answers.question.category', 'tryoutPackage', 'user']);
+        $result->load(['examSession.answers.question.questionCode', 'examSession.answers.question.category', 'examSession.answers.question.subCategory', 'tryoutPackage', 'user']);
         return view('peserta.exam.result', compact('result'));
     }
 

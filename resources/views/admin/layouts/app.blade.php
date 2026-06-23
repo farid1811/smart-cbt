@@ -6,6 +6,11 @@
     <title>@yield('title', 'Dashboard') — Smart CBT Admin</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- KaTeX for Math Formula Rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false},{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}],throwOnError:false});"></script>
     <style>
         /* ─── Reset & Base ───────────────────────────────────────────────── */
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -732,24 +737,44 @@
         </div>
 
         <div class="nav-section">
-            <span class="nav-label">Bank Soal</span>
+            <span class="nav-label">Topik</span>
+            <a href="{{ route('admin.modules.index') }}" class="nav-item {{ request()->routeIs('admin.modules.*') ? 'active' : '' }}">
+                <span class="nav-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                </span>
+                Modul
+            </a>
             <a href="{{ route('admin.categories.index') }}" class="nav-item {{ request()->routeIs('admin.categories.*') ? 'active' : '' }}">
                 <span class="nav-icon">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
                 </span>
                 Kategori Soal
             </a>
-            <a href="{{ route('admin.questions.index') }}" class="nav-item {{ request()->routeIs('admin.questions.*') ? 'active' : '' }}">
+            <a href="{{ route('admin.questions.index') }}" class="nav-item {{ request()->routeIs('admin.questions.*') && !request()->routeIs('admin.questions.create') && !request()->routeIs('admin.questions.edit') ? 'active' : '' }}">
                 <span class="nav-icon">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
                 </span>
-                Bank Soal
+                Daftar Soal
             </a>
+            @if(request()->routeIs('admin.questions.edit') || request()->routeIs('admin.questions.create'))
+            <a href="#" class="nav-item active" style="pointer-events: none;">
+                <span class="nav-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                </span>
+                Edit Soal
+            </a>
+            @endif
         </div>
 
         <div class="nav-section">
-            <span class="nav-label">Tryout</span>
-            <a href="{{ route('admin.tryouts.index') }}" class="nav-item {{ request()->routeIs('admin.tryouts.*') ? 'active' : '' }}">
+            <span class="nav-label">Drill & Tryout</span>
+            <a href="{{ route('admin.tryouts.index', ['type' => 'drill']) }}" class="nav-item {{ (request('type') === 'drill' || (isset($tryout) && $tryout->jenis_ujian === 'drill')) ? 'active' : '' }}">
+                <span class="nav-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
+                </span>
+                Paket Drill Soal
+            </a>
+            <a href="{{ route('admin.tryouts.index', ['type' => 'tryout']) }}" class="nav-item {{ (request('type') === 'tryout' || (isset($tryout) && $tryout->jenis_ujian === 'tryout')) ? 'active' : '' }}">
                 <span class="nav-icon">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
                 </span>

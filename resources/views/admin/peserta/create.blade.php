@@ -37,11 +37,23 @@
             {{-- Email --}}
             <div class="form-group">
                 <label class="form-label" for="email">
-                    Email <span style="color:#ef4444;">*</span>
+                    Email <span style="font-size:0.75rem;color:var(--text-light);font-weight:normal;">(Opsional)</span>
                 </label>
                 <input type="email" id="email" name="email" class="form-control @error('email') is-invalid @enderror"
                        value="{{ old('email') }}" placeholder="email@contoh.com">
                 @error('email')
+                    <p class="form-error">{{ $message }}</p>
+                @enderror
+            </div>
+
+            {{-- Username --}}
+            <div class="form-group">
+                <label class="form-label" for="username">
+                    Username <span style="color:#ef4444;">*</span>
+                </label>
+                <input type="text" id="username" name="username" class="form-control @error('username') is-invalid @enderror"
+                       value="{{ old('username') }}" placeholder="Masukkan username unik" required>
+                @error('username')
                     <p class="form-error">{{ $message }}</p>
                 @enderror
             </div>
@@ -66,18 +78,45 @@
                 </div>
             </div>
 
-            {{-- Grup / Kelas --}}
+            {{-- Grup & Kategori --}}
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                <div class="form-group">
+                    <label class="form-label" for="group_id">
+                        Grup <span style="color:#ef4444;">*</span>
+                    </label>
+                    <select id="group_id" name="group_id" class="form-control @error('group_id') is-invalid @enderror" required onchange="updateCategories()">
+                        <option value="">-- Pilih Grup --</option>
+                        @foreach($groups as $group)
+                            <option value="{{ $group->id }}" data-name="{{ $group->name }}" {{ old('group_id') == $group->id ? 'selected' : '' }}>{{ $group->name }}</option>
+                        @endforeach
+                    </select>
+                    @error('group_id')
+                        <p class="form-error">{{ $message }}</p>
+                    @enderror
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="category">
+                        Kategori <span style="color:#ef4444;">*</span>
+                    </label>
+                    <select id="category" name="category" class="form-control @error('category') is-invalid @enderror" required>
+                        <option value="">-- Pilih Kategori --</option>
+                    </select>
+                    @error('category')
+                        <p class="form-error">{{ $message }}</p>
+                    @enderror
+                </div>
+            </div>
+
+            {{-- Paket Ditugaskan --}}
             <div class="form-group">
-                <label class="form-label" for="group_id">
-                    Grup <span style="color:#ef4444;">*</span>
-                </label>
-                <select id="group_id" name="group_id" class="form-control @error('group_id') is-invalid @enderror" required>
-                    <option value="">-- Pilih Grup --</option>
-                    @foreach($groups as $group)
-                        <option value="{{ $group->id }}" {{ old('group_id') == $group->id ? 'selected' : '' }}>{{ $group->name }}</option>
+                <label class="form-label" for="assigned_package_id">Paket Ditugaskan</label>
+                <select id="assigned_package_id" name="assigned_package_id" class="form-control @error('assigned_package_id') is-invalid @enderror">
+                    <option value="">-- Tidak Ada Paket --</option>
+                    @foreach($packages as $package)
+                        <option value="{{ $package->id }}" {{ old('assigned_package_id') == $package->id ? 'selected' : '' }}>{{ $package->nama }} ({{ $package->jenis_ujian === 'drill' ? 'Drill Soal' : 'Tryout' }} &middot; {{ $package->group }})</option>
                     @endforeach
                 </select>
-                @error('group_id')
+                @error('assigned_package_id')
                     <p class="form-error">{{ $message }}</p>
                 @enderror
             </div>
@@ -146,4 +185,45 @@
     box-shadow: 0 0 0 3px rgba(239,68,68,0.1) !important;
 }
 </style>
+@endpush
+
+@push('scripts')
+<script>
+function updateCategories() {
+    const groupSelect = document.getElementById('group_id');
+    const categorySelect = document.getElementById('category');
+    const selectedOption = groupSelect.options[groupSelect.selectedIndex];
+    const groupName = selectedOption ? selectedOption.getAttribute('data-name') : '';
+    
+    const oldCategory = "{{ old('category') }}";
+    
+    // Clear options
+    categorySelect.innerHTML = '<option value="">-- Pilih Kategori --</option>';
+    
+    if (groupName === 'SKD') {
+        const opt1 = document.createElement('option');
+        opt1.value = 'CPNS';
+        opt1.textContent = 'CPNS';
+        if (oldCategory === 'CPNS') opt1.selected = true;
+        categorySelect.appendChild(opt1);
+        
+        const opt2 = document.createElement('option');
+        opt2.value = 'Kedinasan';
+        opt2.textContent = 'Kedinasan';
+        if (oldCategory === 'Kedinasan') opt2.selected = true;
+        categorySelect.appendChild(opt2);
+    } else if (groupName === 'SNBT') {
+        const opt = document.createElement('option');
+        opt.value = 'SNBT';
+        opt.textContent = 'SNBT';
+        if (oldCategory === 'SNBT') opt.selected = true;
+        categorySelect.appendChild(opt);
+    }
+}
+
+// Initialize categories on load
+document.addEventListener('DOMContentLoaded', function() {
+    updateCategories();
+});
+</script>
 @endpush

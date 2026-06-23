@@ -26,10 +26,15 @@ class LoginController extends Controller
 
     public function login(Request $request)
     {
-        $credentials = $request->validate([
-            'email'    => ['required', 'email'],
+        $loginData = $request->validate([
+            'username' => ['required', 'string'],
             'password' => ['required'],
         ]);
+
+        $credentials = [
+            'username' => $loginData['username'],
+            'password' => $loginData['password'],
+        ];
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
@@ -37,8 +42,8 @@ class LoginController extends Controller
         }
 
         return back()->withErrors([
-            'email' => 'Email atau password yang Anda masukkan salah.',
-        ])->onlyInput('email');
+            'username' => 'Username atau password yang Anda masukkan salah.',
+        ])->onlyInput('username');
     }
 
     public function logout(Request $request)

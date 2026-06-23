@@ -13,12 +13,15 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'username',
         'password',
         'role',
         'no_peserta',
         'no_hp',
         'is_active',
         'group_id',
+        'category',
+        'assigned_package_id',
     ];
 
     protected $hidden = [
@@ -38,6 +41,16 @@ class User extends Authenticatable
     public function group()
     {
         return $this->belongsTo(Group::class);
+    }
+
+    public function assignedPackage()
+    {
+        return $this->belongsTo(TryoutPackage::class, 'assigned_package_id');
+    }
+
+    public function packageAttempts()
+    {
+        return $this->hasMany(PackageAttempt::class, 'participant_id');
     }
 
     public function isAdmin(): bool
