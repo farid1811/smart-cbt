@@ -204,9 +204,9 @@
                 <tr style="border-bottom: 1px solid #f1f5f9;">
                     <td style="padding: 1rem; color: #64748b;">{{ $i+1 }}</td>
                     <td style="padding: 1rem;">
-                        <span style="font-weight:700; color:#475569;">{{ $cat->questionCode->group->name ?? '—' }}</span>
+                        <span style="font-weight:700; color:#475569;">{{ $cat->questionCode?->group?->name ?? '—' }}</span>
                         <span style="color:#cbd5e1; margin:0 0.25rem;">&rarr;</span>
-                        <span class="badge-code">{{ $cat->questionCode->code ?? '—' }}</span>
+                        <span class="badge-code">{{ $cat->questionCode?->code ?? '—' }}</span>
                     </td>
                     <td style="padding: 1rem; font-weight: 600; color: #1e293b;">{{ $cat->name }}</td>
                     <td style="padding: 1rem;">
@@ -405,7 +405,7 @@
                     <label>Kategori (Induk)</label>
                     <select name="category_id" id="add_sub_category_parent_id" required>
                         @foreach($categories as $cat)
-                            <option value="{{ $cat->id }}">[{{ $cat->questionCode->group->name }} - {{ $cat->questionCode->code }}] {{ $cat->name }}</option>
+                            <option value="{{ $cat->id }}">[{{ $cat->questionCode?->group?->name ?? '—' }} - {{ $cat->questionCode?->code ?? '—' }}] {{ $cat->name }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -436,7 +436,7 @@
                     <label>Kategori (Induk)</label>
                     <select name="category_id" id="edit_sub_category_id" required>
                         @foreach($categories as $cat)
-                            <option value="{{ $cat->id }}">[{{ $cat->questionCode->group->name }} - {{ $cat->questionCode->code }}] {{ $cat->name }}</option>
+                            <option value="{{ $cat->id }}">[{{ $cat->questionCode?->group?->name ?? '—' }} - {{ $cat->questionCode?->code ?? '—' }}] {{ $cat->name }}</option>
                         @endforeach
                     </select>
                 </div>

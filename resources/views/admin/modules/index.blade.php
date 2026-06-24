@@ -67,7 +67,7 @@
                         <div>
                             <span class="badge" style="background:#f1f3fb; color:#1e2a78; border-color:#d9deee; font-weight:700;">{{ $m->group->name ?? '—' }}</span>
                             <span style="color:#cbd5e1; margin:0 0.15rem;">&rarr;</span>
-                            <span class="badge" style="background:#eff6ff; color:#1e40af; border-color:#bfdbfe; font-weight:700;">{{ $m->questionCode->code ?? '—' }}</span>
+                            <span class="badge" style="background:#eff6ff; color:#1e40af; border-color:#bfdbfe; font-weight:700;">{{ $m->questionCode?->code ?? '—' }}</span>
                         </div>
                         <div style="color:#64748b; font-size:0.8rem; margin-top:0.15rem;">
                             {{ $m->category->name ?? '—' }} &rarr; <span style="font-weight:500;">{{ $m->subCategory->name ?? '—' }}</span>

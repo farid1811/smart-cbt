@@ -193,7 +193,7 @@
                     </td>
                     <td style="padding:1rem;">
                         <div style="font-size:0.8rem; font-weight:700; color:#334155;">
-                            {{ $q->group->name ?? '—' }} &rarr; <span class="badge-code">{{ $q->questionCode->code ?? '—' }}</span>
+                            {{ $q->group->name ?? '—' }} &rarr; <span class="badge-code">{{ $q->questionCode?->code ?? '—' }}</span>
                         </div>
                         <div style="font-size:0.75rem; color:#64748b; margin-top:0.25rem;">
                             {{ $q->category->name ?? '—' }} &rarr; <span style="font-weight:500;">{{ $q->subCategory->name ?? '—' }}</span>
@@ -243,7 +243,7 @@
                     <select name="category_id" required>
                         <option value="">-- Pilih Kategori --</option>
                         @foreach($categories as $cat)
-                            <option value="{{ $cat->id }}">[{{ $cat->questionCode->group->name }} - {{ $cat->questionCode->code }}] {{ $cat->name }}</option>
+                            <option value="{{ $cat->id }}">[{{ $cat->questionCode?->group?->name ?? '—' }} - {{ $cat->questionCode?->code ?? '—' }}] {{ $cat->name }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -262,7 +262,7 @@
                     <select name="sub_category_id" required>
                         <option value="">-- Pilih Sub Kategori --</option>
                         @foreach($subCategories as $sub)
-                            <option value="{{ $sub->id }}">[{{ $sub->category->questionCode->group->name }} - {{ $sub->category->questionCode->code }}] {{ $sub->category->name }} &rarr; {{ $sub->name }}</option>
+                            <option value="{{ $sub->id }}">[{{ $sub->category?->questionCode?->group?->name ?? '—' }} - {{ $sub->category?->questionCode?->code ?? '—' }}] {{ $sub->category?->name ?? '—' }} &rarr; {{ $sub->name }}</option>
                         @endforeach
                     </select>
                 </div>

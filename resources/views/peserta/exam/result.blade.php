@@ -367,7 +367,7 @@
         <div class="soal-item">
             <div class="soal-item-header" onclick="togglePembahasan({{ $i }})">
                 <div class="soal-status status-{{ $status }}"></div>
-                <span class="badge-code">{{ $q->questionCode->code ?? '—' }}</span>
+                <span class="badge-code">{{ $q->questionCode?->code ?? '—' }}</span>
                 <span style="flex:1; font-size:0.85rem; font-weight:500; color:#334155;">{{ Str::limit(strip_tags($q->soal), 70) }}</span>
                 <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">
                     @if($kosong) ⬜ Kosong

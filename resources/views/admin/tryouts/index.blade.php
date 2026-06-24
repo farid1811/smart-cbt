@@ -51,7 +51,7 @@
                     <span style="font-weight:600;color:var(--text);">{{ $p->group }}</span>
                     @if($p->jenis_ujian === 'drill')
                         @if($p->questionCode)
-                            <span class="badge-code" style="font-size:0.65rem; padding: 0.1rem 0.35rem; margin-left: 0.25rem; background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; font-weight: 700; border-radius: 9999px;">{{ $p->questionCode->code }}</span>
+                            <span class="badge-code" style="font-size:0.65rem; padding: 0.1rem 0.35rem; margin-left: 0.25rem; background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; font-weight: 700; border-radius: 9999px;">{{ $p->questionCode?->code }}</span>
                         @endif
                         <div style="font-size:0.75rem;color:var(--text-muted);margin-top:0.15rem;">
                             {{ $p->categoryRelation->name ?? $p->category }}

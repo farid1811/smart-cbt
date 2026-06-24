@@ -173,7 +173,7 @@
             <div style="display:flex; flex-direction:column; gap:0.5rem;">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <span class="badge" style="background:#EFF6FF; color:var(--primary); border-color:#BFDBFE; font-weight:700;">
-                        {{ $m->questionCode->code ?? 'UMUM' }}
+                        {{ $m->questionCode?->code ?? 'UMUM' }}
                     </span>
                     <span style="font-size:0.72rem; color:var(--success); font-weight:700; background:var(--success-soft); padding:0.15rem 0.5rem; border-radius:99px; border:1px solid #A7F3D0;">
                         Aktif

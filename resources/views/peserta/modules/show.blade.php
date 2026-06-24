@@ -9,7 +9,7 @@
     <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem;">
         <div>
             <span class="badge" style="background:#eff6ff; color:#1e40af; border-color:#bfdbfe; margin-bottom:0.5rem; font-weight:700;">
-                {{ $module->questionCode->code ?? '—' }}
+                {{ $module->questionCode?->code ?? '—' }}
             </span>
             <div style="font-size:0.75rem; color:var(--text-muted); font-weight:600; margin-bottom:0.5rem;">
                 {{ $module->category->name ?? '' }} &rarr; {{ $module->subCategory->name ?? '' }}

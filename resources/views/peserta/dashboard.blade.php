@@ -440,7 +440,7 @@
         <div class="tryout-card card-module">
             <div>
                 <span class="badge" style="background:#EFF6FF; color:var(--primary); border-color:#BFDBFE; margin-bottom:0.75rem;">
-                    {{ $m->questionCode->code ?? 'UMUM' }}
+                    {{ $m->questionCode?->code ?? 'UMUM' }}
                 </span>
                 <div style="font-size:0.7rem; color:var(--text-muted); font-weight:700; margin-bottom:0.5rem; text-transform:uppercase; letter-spacing:0.02em;">
                     {{ $m->category->name ?? 'Materi' }}
