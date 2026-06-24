@@ -33,7 +33,7 @@ class ModuleController extends Controller
             $query->where('name', 'like', '%' . $request->search . '%');
         }
 
-        $modules = $query->latest()->paginate(15)->withQueryString();
+        $modules = $query->latest()->paginate(20)->withQueryString();
         $groups = Group::all();
 
         return view('admin.modules.index', compact('modules', 'groups'));

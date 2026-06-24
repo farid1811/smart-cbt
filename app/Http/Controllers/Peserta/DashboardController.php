@@ -25,7 +25,11 @@ class DashboardController extends Controller
             ->where('jenis_ujian', 'drill')
             ->where('is_active', true)
             ->withCount('questions')
-            ->with(['packageAttempts' => fn($q) => $q->where('participant_id', $user->id)])
+            ->with([
+                'packageAttempts' => fn($q) => $q->where('participant_id', $user->id),
+                'categoryRelation',
+                'subCategory'
+            ])
             ->latest()
             ->limit(3)
             ->get();
@@ -63,7 +67,7 @@ class DashboardController extends Controller
             ->where('is_active', true)
             ->with(['group', 'questionCode', 'category', 'subCategory'])
             ->latest()
-            ->paginate(12);
+            ->paginate(20);
 
         return view('peserta.modules.index', compact('modules'));
     }
@@ -89,7 +93,11 @@ class DashboardController extends Controller
             ->where('jenis_ujian', 'drill')
             ->where('is_active', true)
             ->withCount('questions')
-            ->with(['packageAttempts' => fn($q) => $q->where('participant_id', $user->id)])
+            ->with([
+                'packageAttempts' => fn($q) => $q->where('participant_id', $user->id),
+                'categoryRelation',
+                'subCategory'
+            ])
             ->latest()
             ->paginate(10);
 

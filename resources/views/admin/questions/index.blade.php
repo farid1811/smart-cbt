@@ -104,6 +104,12 @@
         @endforeach
     </select>
 
+    <select name="package_type" class="form-control" style="max-width:130px;">
+        <option value="">Semua Jenis</option>
+        <option value="tryout" {{ request('package_type') == 'tryout' ? 'selected' : '' }}>Tryout</option>
+        <option value="drill" {{ request('package_type') == 'drill' ? 'selected' : '' }}>Drill</option>
+    </select>
+
     <select name="group_id" id="group_filter" class="form-control" style="max-width:130px;">
         <option value="">Semua Grup</option>
         @foreach($groups as $grp)
@@ -124,7 +130,7 @@
     </select>
 
     <button type="submit" class="btn btn-secondary">Filter</button>
-    @if(request()->hasAny(['search','tryout_package_id','group_id','question_code_id','category_id','sub_category_id']))
+    @if(request()->hasAny(['search','tryout_package_id','package_type','group_id','question_code_id','category_id','sub_category_id']))
         <a href="{{ route('admin.questions.index') }}" class="btn btn-secondary">Reset</a>
     @endif
 </form>

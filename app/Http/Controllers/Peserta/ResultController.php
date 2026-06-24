@@ -13,7 +13,7 @@ class ResultController extends Controller
         $results = Auth::user()->results()
             ->with(['tryoutPackage', 'examSession'])
             ->latest()
-            ->paginate(10);
+            ->paginate(25);
 
         return view('peserta.results.index', compact('results'));
     }

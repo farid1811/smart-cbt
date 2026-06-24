@@ -229,7 +229,7 @@
                 <div class="lg:col-span-5 relative">
                     <div class="float-anim">
                         <div class="relative mx-auto max-w-sm sm:max-w-md bg-gradient-to-br from-blue-50 to-indigo-50 border border-slate-200/50 p-4 rounded-3xl shadow-xl overflow-hidden group">
-                            <img src="{{ asset('images/hero-education.png') }}" alt="Ilustrasi Siswa Belajar Modern" class="w-full h-auto object-cover rounded-2xl shadow-inner group-hover:scale-[1.02] transition-transform duration-500">
+                            <img src="{{ asset('images/hero-education.webp') }}" alt="Ilustrasi Siswa Belajar Modern" class="w-full h-auto object-cover rounded-2xl shadow-inner group-hover:scale-[1.02] transition-transform duration-500" loading="lazy">
                             <!-- Overlay floating Badge -->
                             <div class="absolute bottom-6 left-6 bg-white/90 backdrop-blur-md border border-slate-100 rounded-2xl p-3.5 flex items-center gap-3 shadow-lg">
                                 <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-500 font-bold">
@@ -327,7 +327,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
                 <!-- Alumni 1 -->
                 <div class="bg-slate-50/50 border border-slate-200/50 rounded-2xl overflow-hidden premium-glow p-4 flex flex-col gap-4 text-center">
-                    <img src="{{ asset('images/alumni-budi.png') }}" alt="Alumni Budi Santoso" class="w-full aspect-square object-cover rounded-xl shadow-sm">
+                    <img src="{{ asset('images/alumni-budi.webp') }}" alt="Alumni Budi Santoso" class="w-full aspect-square object-cover rounded-xl shadow-sm" loading="lazy">
                     <div class="space-y-1">
                         <h4 class="font-display font-bold text-slate-800 text-base">Budi Santoso</h4>
                         <span class="inline-flex px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-primary uppercase tracking-wider">PKN STAN</span>
@@ -337,7 +337,7 @@
 
                 <!-- Alumni 2 -->
                 <div class="bg-slate-50/50 border border-slate-200/50 rounded-2xl overflow-hidden premium-glow p-4 flex flex-col gap-4 text-center">
-                    <img src="{{ asset('images/alumni-siti.png') }}" alt="Alumni Siti Aminah" class="w-full aspect-square object-cover rounded-xl shadow-sm">
+                    <img src="{{ asset('images/alumni-siti.webp') }}" alt="Alumni Siti Aminah" class="w-full aspect-square object-cover rounded-xl shadow-sm" loading="lazy">
                     <div class="space-y-1">
                         <h4 class="font-display font-bold text-slate-800 text-base">Siti Aminah</h4>
                         <span class="inline-flex px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-primary uppercase tracking-wider">IPDN</span>
@@ -347,7 +347,7 @@
 
                 <!-- Alumni 3 -->
                 <div class="bg-slate-50/50 border border-slate-200/50 rounded-2xl overflow-hidden premium-glow p-4 flex flex-col gap-4 text-center">
-                    <img src="{{ asset('images/alumni-riki.png') }}" alt="Alumni Riki Wijaya" class="w-full aspect-square object-cover rounded-xl shadow-sm">
+                    <img src="{{ asset('images/alumni-riki.webp') }}" alt="Alumni Riki Wijaya" class="w-full aspect-square object-cover rounded-xl shadow-sm" loading="lazy">
                     <div class="space-y-1">
                         <h4 class="font-display font-bold text-slate-800 text-base">Riki Wijaya</h4>
                         <span class="inline-flex px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700 uppercase tracking-wider">Universitas Indonesia</span>
@@ -357,7 +357,7 @@
 
                 <!-- Alumni 4 -->
                 <div class="bg-slate-50/50 border border-slate-200/50 rounded-2xl overflow-hidden premium-glow p-4 flex flex-col gap-4 text-center">
-                    <img src="{{ asset('images/alumni-ani.png') }}" alt="Alumni Ani Lestari" class="w-full aspect-square object-cover rounded-xl shadow-sm">
+                    <img src="{{ asset('images/alumni-ani.webp') }}" alt="Alumni Ani Lestari" class="w-full aspect-square object-cover rounded-xl shadow-sm" loading="lazy">
                     <div class="space-y-1">
                         <h4 class="font-display font-bold text-slate-800 text-base">Ani Lestari</h4>
                         <span class="inline-flex px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700 uppercase tracking-wider">Universitas Syiah Kuala</span>
@@ -386,7 +386,7 @@
                         "Belajar di Bimbel Plano sangat terarah. Latihan soalnya sangat relevan dengan tipe ujian asli dan tutor-tutornya memberikan tips penyelesaian cepat yang tidak diajarkan di sekolah. Sangat membantu saya hingga lolos STAN!"
                     </p>
                     <div class="flex items-center gap-4 border-t border-slate-100 pt-6">
-                        <img src="{{ asset('images/alumni-budi.png') }}" alt="Budi Santoso Avatar" class="w-12 h-12 rounded-full object-cover shadow-sm border border-slate-200">
+                        <img src="{{ asset('images/alumni-budi.webp') }}" alt="Budi Santoso Avatar" class="w-12 h-12 rounded-full object-cover shadow-sm border border-slate-200" loading="lazy">
                         <div>
                             <h4 class="font-bold text-slate-800 text-sm">Budi Santoso</h4>
                             <span class="text-xs text-primary font-bold uppercase tracking-wider">Alumni Lolos STAN</span>
@@ -400,7 +400,7 @@
                         "Metode bimbingan tatap muka Bimbel Plano membuat materi sesulit apa pun menjadi mudah dipahami. Ditambah lagi dengan tryout online yang rutin melatih mental dan kecepatan pengerjaan saya."
                     </p>
                     <div class="flex items-center gap-4 border-t border-slate-100 pt-6">
-                        <img src="{{ asset('images/alumni-siti.png') }}" alt="Siti Aminah Avatar" class="w-12 h-12 rounded-full object-cover shadow-sm border border-slate-200">
+                        <img src="{{ asset('images/alumni-siti.webp') }}" alt="Siti Aminah Avatar" class="w-12 h-12 rounded-full object-cover shadow-sm border border-slate-200" loading="lazy">
                         <div>
                             <h4 class="font-bold text-slate-800 text-sm">Siti Aminah</h4>
                             <span class="text-xs text-primary font-bold uppercase tracking-wider">Alumni Lolos IPDN</span>
@@ -414,7 +414,7 @@
                         "Tryout online dengan sistem penanda ragu-ragu dan pembahasan detail di platform Smart CBT Bimbel Plano melatih kesiapan taktis saya. Saya jadi sangat percaya diri di hari pelaksanaan ujian."
                     </p>
                     <div class="flex items-center gap-4 border-t border-slate-100 pt-6">
-                        <img src="{{ asset('images/alumni-riki.png') }}" alt="Riki Wijaya Avatar" class="w-12 h-12 rounded-full object-cover shadow-sm border border-slate-200">
+                        <img src="{{ asset('images/alumni-riki.webp') }}" alt="Riki Wijaya Avatar" class="w-12 h-12 rounded-full object-cover shadow-sm border border-slate-200" loading="lazy">
                         <div>
                             <h4 class="font-bold text-slate-800 text-sm">Riki Wijaya</h4>
                             <span class="text-xs text-primary font-bold uppercase tracking-wider">Alumni Lolos UI</span>
@@ -428,7 +428,7 @@
                         "Pembahasan soal-soal di Bimbel Plano disajikan secara sistematis. Saya berhasil lolos di Universitas Syiah Kuala berkat bimbingan intensif dan latihan intensif tatap muka di sini."
                     </p>
                     <div class="flex items-center gap-4 border-t border-slate-100 pt-6">
-                        <img src="{{ asset('images/alumni-ani.png') }}" alt="Ani Lestari Avatar" class="w-12 h-12 rounded-full object-cover shadow-sm border border-slate-200">
+                        <img src="{{ asset('images/alumni-ani.webp') }}" alt="Ani Lestari Avatar" class="w-12 h-12 rounded-full object-cover shadow-sm border border-slate-200" loading="lazy">
                         <div>
                             <h4 class="font-bold text-slate-800 text-sm">Ani Lestari</h4>
                             <span class="text-xs text-primary font-bold uppercase tracking-wider">Alumni Lolos USK</span>

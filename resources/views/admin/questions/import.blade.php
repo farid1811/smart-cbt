@@ -81,29 +81,73 @@
                 <div style="background: var(--primary-soft); border: 1px solid var(--primary-mid); border-radius: 8px; padding: 1.25rem; margin-bottom: 1.5rem;">
                     <h4 style="font-weight: 700; font-size: 0.85rem; color: var(--primary); margin: 0 0 0.5rem; display: flex; align-items: center; gap: 0.35rem;">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="8"/></svg>
-                        Panduan Format Penulisan File Word:
+                        Panduan Format Template Word (Tabel Resmi):
                     </h4>
                     <p style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; margin: 0 0 0.75rem;">
-                        Pastikan file Word Anda ditulis mengikuti pola di bawah ini. Gambar dapat disisipkan langsung di dalam teks pertanyaan maupun pembahasan.
+                        File Word harus berisi tabel dengan 4 kolom utama: <strong>No</strong>, <strong>Jenis</strong>, <strong>Isi</strong>, dan <strong>Jawaban</strong>. Gambar dan teks dapat digabungkan langsung di dalam kolom <strong>Isi</strong>.
                     </p>
-                    <div style="background: #ffffff; border: 1px solid var(--border); border-radius: 6px; padding: 0.75rem 1rem; font-family: monospace; font-size: 0.75rem; color: var(--text); line-height: 1.4;">
-                        SOAL: Pertanyaan nomor satu...<br>
-                        (Masukkan gambar soal di sini jika ada)<br>
-                        A. Pilihan jawaban A<br>
-                        B. Pilihan jawaban B<br>
-                        C. Pilihan jawaban C<br>
-                        D. Pilihan jawaban D<br>
-                        E. Pilihan jawaban E<br>
-                        KUNCI: B<br>
-                        PEMBAHASAN: Penjelasan pembahasan soal nomor satu...<br>
-                        (Masukkan gambar pembahasan di sini jika ada)
+                    <div style="overflow-x: auto; background: #ffffff; border: 1px solid var(--border); border-radius: 6px; padding: 0.5rem; margin-bottom: 0.5rem;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 0.72rem; font-family: monospace; text-align: left;">
+                            <thead>
+                                <tr style="background: #f1f5f9; border-bottom: 1px solid #cbd5e1;">
+                                    <th style="padding: 0.4rem; font-weight: 700;">No</th>
+                                    <th style="padding: 0.4rem; font-weight: 700;">Jenis</th>
+                                    <th style="padding: 0.4rem; font-weight: 700;">Isi</th>
+                                    <th style="padding: 0.4rem; font-weight: 700;">Jawaban</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr style="border-bottom: 1px solid #e2e8f0;">
+                                    <td style="padding: 0.4rem;">1</td>
+                                    <td style="padding: 0.4rem; font-weight: 700; color: #1e40af;">SOAL</td>
+                                    <td style="padding: 0.4rem;">What is the capital city of Indonesia? [Teks & Gambar]</td>
+                                    <td style="padding: 0.4rem; color: #94a3b8;">[Kosong]</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid #e2e8f0;">
+                                    <td style="padding: 0.4rem;"></td>
+                                    <td style="padding: 0.4rem; font-weight: 700; color: #059669;">JAWABAN</td>
+                                    <td style="padding: 0.4rem;">Jakarta</td>
+                                    <td style="padding: 0.4rem; font-weight: 700; color: #1e40af;">1</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid #e2e8f0;">
+                                    <td style="padding: 0.4rem;"></td>
+                                    <td style="padding: 0.4rem; font-weight: 700; color: #059669;">JAWABAN</td>
+                                    <td style="padding: 0.4rem;">Bandung</td>
+                                    <td style="padding: 0.4rem; font-weight: 700;">0</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid #e2e8f0;">
+                                    <td style="padding: 0.4rem;"></td>
+                                    <td style="padding: 0.4rem; font-weight: 700; color: #059669;">JAWABAN</td>
+                                    <td style="padding: 0.4rem;">Medan</td>
+                                    <td style="padding: 0.4rem; font-weight: 700;">0</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid #e2e8f0;">
+                                    <td style="padding: 0.4rem;"></td>
+                                    <td style="padding: 0.4rem; font-weight: 700; color: #059669;">JAWABAN</td>
+                                    <td style="padding: 0.4rem;">Surabaya</td>
+                                    <td style="padding: 0.4rem; font-weight: 700;">0</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid #e2e8f0;">
+                                    <td style="padding: 0.4rem;"></td>
+                                    <td style="padding: 0.4rem; font-weight: 700; color: #059669;">JAWABAN</td>
+                                    <td style="padding: 0.4rem;">Makassar</td>
+                                    <td style="padding: 0.4rem; font-weight: 700;">0</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 0.4rem;"></td>
+                                    <td style="padding: 0.4rem; font-weight: 700; color: #7c3aed;">PEMBAHASAN</td>
+                                    <td style="padding: 0.4rem;">Jakarta is the capital city. [Teks & Gambar]</td>
+                                    <td style="padding: 0.4rem; color: #94a3b8;">[Kosong]</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
                 <div style="display: flex; gap: 0.75rem; justify-content: flex-end; padding-top: 1.25rem; border-top: 1px solid var(--border);">
                     <a href="{{ route('admin.questions.index') }}" class="btn btn-secondary">Batal</a>
                     <button type="submit" class="btn btn-primary">
-                        Unggah & Pratinjau DOCX
+                        Unggah & Pratinjau Word
                     </button>
                 </div>
             </form>
@@ -135,23 +179,69 @@
                 </div>
 
                 {{-- Panduan Format --}}
-                <div style="background: var(--warning-soft); border: 1px solid #FDE68A; border-radius: 8px; padding: 1.25rem; margin-bottom: 1.5rem;">
-                    <h4 style="font-weight: 700; font-size: 0.85rem; color: var(--warning); margin: 0 0 0.5rem; display: flex; align-items: center; gap: 0.35rem;">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                        Informasi & Panduan Impor PDF:
+                <div style="background: var(--primary-soft); border: 1px solid var(--primary-mid); border-radius: 8px; padding: 1.25rem; margin-bottom: 1.5rem;">
+                    <h4 style="font-weight: 700; font-size: 0.85rem; color: var(--primary); margin: 0 0 0.5rem; display: flex; align-items: center; gap: 0.35rem;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="8"/></svg>
+                        Panduan Format Template PDF (Tabel Resmi):
                     </h4>
                     <p style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; margin: 0 0 0.75rem;">
-                        Parser PDF akan membaca teks berbasis digital dalam berkas PDF Anda. Pola penulisan soal harus sama persis dengan panduan berkas Word. Gambar yang tertanam dalam PDF akan diekstraksi dan dilampirkan secara otomatis ke pertanyaan.
+                        Berkas PDF harus berisi tabel dengan 4 kolom utama: <strong>No</strong>, <strong>Jenis</strong>, <strong>Isi</strong>, dan <strong>Jawaban</strong>. Gambar dan teks di dalam tabel akan diekstraksi secara otomatis dan dipetakan sesuai urutan.
                     </p>
-                    <div style="background: #ffffff; border: 1px solid var(--border); border-radius: 6px; padding: 0.75rem 1rem; font-family: monospace; font-size: 0.75rem; color: var(--text); line-height: 1.4;">
-                        SOAL: Pertanyaan nomor satu...<br>
-                        A. Pilihan jawaban A<br>
-                        B. Pilihan jawaban B<br>
-                        C. Pilihan jawaban C<br>
-                        D. Pilihan jawaban D<br>
-                        E. Pilihan jawaban E<br>
-                        KUNCI: B<br>
-                        PEMBAHASAN: Penjelasan pembahasan soal nomor satu...
+                    <div style="overflow-x: auto; background: #ffffff; border: 1px solid var(--border); border-radius: 6px; padding: 0.5rem; margin-bottom: 0.5rem;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 0.72rem; font-family: monospace; text-align: left;">
+                            <thead>
+                                <tr style="background: #f1f5f9; border-bottom: 1px solid #cbd5e1;">
+                                    <th style="padding: 0.4rem; font-weight: 700;">No</th>
+                                    <th style="padding: 0.4rem; font-weight: 700;">Jenis</th>
+                                    <th style="padding: 0.4rem; font-weight: 700;">Isi</th>
+                                    <th style="padding: 0.4rem; font-weight: 700;">Jawaban</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr style="border-bottom: 1px solid #e2e8f0;">
+                                    <td style="padding: 0.4rem;">1</td>
+                                    <td style="padding: 0.4rem; font-weight: 700; color: #1e40af;">SOAL</td>
+                                    <td style="padding: 0.4rem;">What is the capital city of Indonesia? [Teks & Gambar]</td>
+                                    <td style="padding: 0.4rem; color: #94a3b8;">[Kosong]</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid #e2e8f0;">
+                                    <td style="padding: 0.4rem;"></td>
+                                    <td style="padding: 0.4rem; font-weight: 700; color: #059669;">JAWABAN</td>
+                                    <td style="padding: 0.4rem;">Jakarta</td>
+                                    <td style="padding: 0.4rem; font-weight: 700; color: #1e40af;">1</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid #e2e8f0;">
+                                    <td style="padding: 0.4rem;"></td>
+                                    <td style="padding: 0.4rem; font-weight: 700; color: #059669;">JAWABAN</td>
+                                    <td style="padding: 0.4rem;">Bandung</td>
+                                    <td style="padding: 0.4rem; font-weight: 700;">0</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid #e2e8f0;">
+                                    <td style="padding: 0.4rem;"></td>
+                                    <td style="padding: 0.4rem; font-weight: 700; color: #059669;">JAWABAN</td>
+                                    <td style="padding: 0.4rem;">Medan</td>
+                                    <td style="padding: 0.4rem; font-weight: 700;">0</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid #e2e8f0;">
+                                    <td style="padding: 0.4rem;"></td>
+                                    <td style="padding: 0.4rem; font-weight: 700; color: #059669;">JAWABAN</td>
+                                    <td style="padding: 0.4rem;">Surabaya</td>
+                                    <td style="padding: 0.4rem; font-weight: 700;">0</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid #e2e8f0;">
+                                    <td style="padding: 0.4rem;"></td>
+                                    <td style="padding: 0.4rem; font-weight: 700; color: #059669;">JAWABAN</td>
+                                    <td style="padding: 0.4rem;">Makassar</td>
+                                    <td style="padding: 0.4rem; font-weight: 700;">0</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 0.4rem;"></td>
+                                    <td style="padding: 0.4rem; font-weight: 700; color: #7c3aed;">PEMBAHASAN</td>
+                                    <td style="padding: 0.4rem;">Jakarta is the capital city. [Teks & Gambar]</td>
+                                    <td style="padding: 0.4rem; color: #94a3b8;">[Kosong]</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
@@ -164,6 +254,7 @@
             </form>
         </div>
     </div>
+ 
 </div>
 @endsection
 

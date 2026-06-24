@@ -16,13 +16,17 @@ class TryoutPackageController extends Controller
         if ($request->filled('type')) {
             $query->where('jenis_ujian', $request->type);
         }
-        $packages = $query->withCount('questions')->latest()->paginate(10)->withQueryString();
+        if ($request->filled('search')) {
+            $query->where('nama', 'like', '%' . $request->search . '%');
+        }
+        $packages = $query->withCount('questions')->latest()->paginate(20)->withQueryString();
         return view('admin.tryouts.index', compact('packages'));
     }
 
     public function create()
     {
-        return view('admin.tryouts.create');
+        $groups = \App\Models\Group::all();
+        return view('admin.tryouts.create', compact('groups'));
     }
 
     public function store(Request $request)
@@ -31,8 +35,11 @@ class TryoutPackageController extends Controller
             'nama'                 => 'required|string|max:255',
             'deskripsi'            => 'nullable|string',
             'jenis_ujian'          => 'required|in:tryout,drill',
-            'group'                => 'required|in:SKD,SNBT',
-            'category'             => 'required|string|max:50',
+            'group_id'             => 'required|exists:groups,id',
+            'category'             => 'required_if:jenis_ujian,tryout|nullable|string|max:50',
+            'question_code_id'     => 'required_if:jenis_ujian,drill|nullable|exists:question_codes,id',
+            'category_id'          => 'required_if:jenis_ujian,drill|nullable|exists:categories,id',
+            'sub_category_id'      => 'nullable|exists:sub_categories,id',
             'attempt_limit'        => 'required|integer|min:1',
             'durasi_menit'         => 'required|integer|min:10|max:300',
             'is_active'            => 'boolean',
@@ -42,10 +49,28 @@ class TryoutPackageController extends Controller
             'seb_url'              => 'nullable|string|max:255',
             'seb_quit_password'    => 'nullable|string|max:255',
             'seb_browser_lockdown' => 'boolean',
+            'token'                => 'nullable|string|max:255',
+            'randomize_questions'  => 'boolean',
+            'randomize_options'    => 'boolean',
         ]);
+
+        $group = \App\Models\Group::findOrFail($validated['group_id']);
+        $validated['group'] = $group->name;
+
+        if ($validated['jenis_ujian'] === 'drill') {
+            $categoryModel = \App\Models\Category::findOrFail($validated['category_id']);
+            $validated['category'] = $categoryModel->name;
+        } else {
+            $validated['question_code_id'] = null;
+            $validated['category_id'] = null;
+            $validated['sub_category_id'] = null;
+        }
 
         $validated['is_active'] = $request->has('is_active');
         $validated['seb_browser_lockdown'] = $request->has('seb_browser_lockdown');
+        $validated['randomize_questions'] = $request->has('randomize_questions');
+        $validated['randomize_options'] = $request->has('randomize_options');
+
         TryoutPackage::create($validated);
         return redirect()->route('admin.tryouts.index', ['type' => $validated['jenis_ujian']])->with('success', 'Paket ujian berhasil dibuat.');
     }
@@ -59,7 +84,8 @@ class TryoutPackageController extends Controller
 
     public function edit(TryoutPackage $tryout)
     {
-        return view('admin.tryouts.edit', compact('tryout'));
+        $groups = \App\Models\Group::all();
+        return view('admin.tryouts.edit', compact('tryout', 'groups'));
     }
 
     public function update(Request $request, TryoutPackage $tryout)
@@ -68,8 +94,11 @@ class TryoutPackageController extends Controller
             'nama'                 => 'required|string|max:255',
             'deskripsi'            => 'nullable|string',
             'jenis_ujian'          => 'required|in:tryout,drill',
-            'group'                => 'required|in:SKD,SNBT',
-            'category'             => 'required|string|max:50',
+            'group_id'             => 'required|exists:groups,id',
+            'category'             => 'required_if:jenis_ujian,tryout|nullable|string|max:50',
+            'question_code_id'     => 'required_if:jenis_ujian,drill|nullable|exists:question_codes,id',
+            'category_id'          => 'required_if:jenis_ujian,drill|nullable|exists:categories,id',
+            'sub_category_id'      => 'nullable|exists:sub_categories,id',
             'attempt_limit'        => 'required|integer|min:1',
             'durasi_menit'         => 'required|integer|min:10|max:300',
             'is_active'            => 'boolean',
@@ -79,10 +108,28 @@ class TryoutPackageController extends Controller
             'seb_url'              => 'nullable|string|max:255',
             'seb_quit_password'    => 'nullable|string|max:255',
             'seb_browser_lockdown' => 'boolean',
+            'token'                => 'nullable|string|max:255',
+            'randomize_questions'  => 'boolean',
+            'randomize_options'    => 'boolean',
         ]);
+
+        $group = \App\Models\Group::findOrFail($validated['group_id']);
+        $validated['group'] = $group->name;
+
+        if ($validated['jenis_ujian'] === 'drill') {
+            $categoryModel = \App\Models\Category::findOrFail($validated['category_id']);
+            $validated['category'] = $categoryModel->name;
+        } else {
+            $validated['question_code_id'] = null;
+            $validated['category_id'] = null;
+            $validated['sub_category_id'] = null;
+        }
 
         $validated['is_active'] = $request->has('is_active');
         $validated['seb_browser_lockdown'] = $request->has('seb_browser_lockdown');
+        $validated['randomize_questions'] = $request->has('randomize_questions');
+        $validated['randomize_options'] = $request->has('randomize_options');
+
         $tryout->update($validated);
         return redirect()->route('admin.tryouts.index', ['type' => $validated['jenis_ujian']])->with('success', 'Paket ujian berhasil diperbarui.');
     }

@@ -37,7 +37,7 @@ class PesertaController extends Controller
             $query->where('group_id', $request->group_id);
         }
 
-        $peserta = $query->withCount('examSessions')->latest()->paginate(20);
+        $peserta = $query->withCount('examSessions')->latest()->paginate(25);
         $groups = \App\Models\Group::all();
 
         return view('admin.peserta.index', compact('peserta', 'groups'));

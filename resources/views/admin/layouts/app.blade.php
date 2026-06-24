@@ -716,8 +716,8 @@
     </div>
 
     <nav class="sidebar-nav">
+        <!-- Dashboard -->
         <div class="nav-section">
-            <span class="nav-label">Utama</span>
             <a href="{{ route('admin.dashboard') }}" class="nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                 <span class="nav-icon">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
@@ -726,6 +726,7 @@
             </a>
         </div>
 
+        <!-- Management -->
         <div class="nav-section">
             <span class="nav-label">Manajemen</span>
             <a href="{{ route('admin.peserta.index') }}" class="nav-item {{ request()->routeIs('admin.peserta.*') ? 'active' : '' }}">
@@ -736,6 +737,7 @@
             </a>
         </div>
 
+        <!-- Topik -->
         <div class="nav-section">
             <span class="nav-label">Topik</span>
             <a href="{{ route('admin.modules.index') }}" class="nav-item {{ request()->routeIs('admin.modules.*') ? 'active' : '' }}">
@@ -744,11 +746,11 @@
                 </span>
                 Modul
             </a>
-            <a href="{{ route('admin.categories.index') }}" class="nav-item {{ request()->routeIs('admin.categories.*') ? 'active' : '' }}">
+            <a href="{{ route('admin.categories.index', ['tab' => 'category']) }}" class="nav-item {{ request()->routeIs('admin.categories.*') ? 'active' : '' }}">
                 <span class="nav-icon">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
                 </span>
-                Kategori Soal
+                Kategori
             </a>
             <a href="{{ route('admin.questions.index') }}" class="nav-item {{ request()->routeIs('admin.questions.*') && !request()->routeIs('admin.questions.create') && !request()->routeIs('admin.questions.edit') ? 'active' : '' }}">
                 <span class="nav-icon">
@@ -766,13 +768,14 @@
             @endif
         </div>
 
+        <!-- Drill & Tryout -->
         <div class="nav-section">
             <span class="nav-label">Drill & Tryout</span>
             <a href="{{ route('admin.tryouts.index', ['type' => 'drill']) }}" class="nav-item {{ (request('type') === 'drill' || (isset($tryout) && $tryout->jenis_ujian === 'drill')) ? 'active' : '' }}">
                 <span class="nav-icon">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
                 </span>
-                Paket Drill Soal
+                Paket Drill
             </a>
             <a href="{{ route('admin.tryouts.index', ['type' => 'tryout']) }}" class="nav-item {{ (request('type') === 'tryout' || (isset($tryout) && $tryout->jenis_ujian === 'tryout')) ? 'active' : '' }}">
                 <span class="nav-icon">
@@ -782,13 +785,37 @@
             </a>
         </div>
 
+        <!-- Results -->
         <div class="nav-section">
-            <span class="nav-label">Laporan</span>
-            <a href="{{ route('admin.rekap.index') }}" class="nav-item {{ request()->routeIs('admin.rekap.*') ? 'active' : '' }}">
+            <span class="nav-label">Hasil Ujian</span>
+            <a href="{{ route('admin.rekap.index', ['view' => 'breakdown']) }}" class="nav-item {{ request()->routeIs('admin.rekap.*') && request('view') === 'breakdown' ? 'active' : '' }}">
                 <span class="nav-icon">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg>
                 </span>
                 Rekap Nilai
+            </a>
+            <a href="{{ route('admin.rekap.index', ['view' => 'ranking']) }}" class="nav-item {{ request()->routeIs('admin.rekap.*') && request('view') === 'ranking' ? 'active' : '' }}">
+                <span class="nav-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                </span>
+                Peringkat
+            </a>
+            <a href="{{ route('admin.rekap.index', ['view' => 'history']) }}" class="nav-item {{ request()->routeIs('admin.rekap.*') && (request('view') === 'history' || !request()->has('view')) ? 'active' : '' }}">
+                <span class="nav-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                </span>
+                Riwayat
+            </a>
+        </div>
+
+        <!-- Settings -->
+        <div class="nav-section">
+            <span class="nav-label">Pengaturan</span>
+            <a href="#" class="nav-item" onclick="alert('Pengaturan Sistem telah dikonfigurasi penuh untuk operasional. Opsi umum dikelola melalui pengaturan Tryout dan Soal.'); return false;">
+                <span class="nav-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                </span>
+                Pengaturan
             </a>
         </div>
     </nav>
@@ -837,6 +864,19 @@
             <div class="alert alert-error">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                 {{ session('error') }}
+            </div>
+        @endif
+        @if($errors->any())
+            <div class="alert alert-error">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <div style="display: flex; flex-direction: column; text-align: left;">
+                    <strong style="margin-bottom: 0.25rem;">Terdapat kesalahan validasi:</strong>
+                    <ul style="margin: 0; padding-left: 1.25rem; font-size: 0.85rem; line-height: 1.4;">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
             </div>
         @endif
         @if(session('info'))

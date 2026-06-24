@@ -140,15 +140,13 @@
         <div>
             <button onclick="openModal('addCodeModal')" class="btn btn-primary" id="btn-add-code" style="display:none;">+ Kode Soal</button>
             <button onclick="openModal('addCategoryModal')" class="btn btn-primary" id="btn-add-category" style="display:none;">+ Kategori</button>
-            <button onclick="openModal('addSubCategoryModal')" class="btn btn-primary" id="btn-add-subcategory" style="display:none;">+ Sub Kategori</button>
         </div>
     </div>
 
     <!-- Navigation Tabs -->
     <div class="tab-nav">
         <button class="tab-btn active" onclick="switchTab('code')">1. Kode Soal</button>
-        <button class="tab-btn" onclick="switchTab('category')">2. Kategori</button>
-        <button class="tab-btn" onclick="switchTab('subcategory')">3. Sub Kategori</button>
+        <button class="tab-btn" onclick="switchTab('category')">2. Kategori & Sub Kategori</button>
     </div>
 
     <!-- TAB 1: KODE SOAL -->
@@ -197,6 +195,7 @@
                     <th style="padding: 0.75rem 1rem;">#</th>
                     <th style="padding: 0.75rem 1rem;">Grup &rarr; Kode Soal</th>
                     <th style="padding: 0.75rem 1rem;">Nama Kategori</th>
+                    <th style="padding: 0.75rem 1rem; width: 45%;">Sub Kategori</th>
                     <th style="padding: 0.75rem 1rem;">Aksi</th>
                 </tr>
             </thead>
@@ -211,6 +210,32 @@
                     </td>
                     <td style="padding: 1rem; font-weight: 600; color: #1e293b;">{{ $cat->name }}</td>
                     <td style="padding: 1rem;">
+                        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
+                            @forelse($cat->subCategories as $sub)
+                                <span style="background: #f8fafc; border: 1px solid #e2e8f0; color: #334155; padding: 0.35rem 0.75rem; border-radius: 6px; font-size: 0.825rem; font-weight: 500; display: inline-flex; align-items: center; gap: 0.5rem; transition: all 0.15s ease-in-out;">
+                                    <span>{{ $sub->name }}</span>
+                                    <span style="display: inline-flex; gap: 0.25rem; border-left: 1px solid #cbd5e1; padding-left: 0.25rem; margin-left: 0.25rem;">
+                                        <button type="button" onclick="editSubCategory({{ json_encode($sub) }})" style="background: none; border: none; padding: 0.125rem; color: #64748b; cursor: pointer; display: inline-flex; align-items: center; border-radius: 4px;" title="Edit Sub Kategori" onmouseover="this.style.color='#1e40af'" onmouseout="this.style.color='#64748b'">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                        </button>
+                                        <form method="POST" action="{{ route('admin.categories.destroySubCategory', $sub) }}" onsubmit="return confirm('Hapus sub kategori ini?')" style="display: inline; margin: 0;">
+                                            @csrf @method('DELETE')
+                                            <button type="submit" style="background: none; border: none; padding: 0.125rem; color: #ef4444; cursor: pointer; display: inline-flex; align-items: center; border-radius: 4px;" title="Hapus Sub Kategori" onmouseover="this.style.color='#b91c1c'" onmouseout="this.style.color='#ef4444'">
+                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                                            </button>
+                                        </form>
+                                    </span>
+                                </span>
+                            @empty
+                                <span style="color: #94a3b8; font-size: 0.825rem; font-style: italic;">Belum ada sub kategori</span>
+                            @endforelse
+                            <button type="button" onclick="addSubCategoryForCategory({{ $cat->id }})" style="background: #f0fdf4; border: 1px dashed #bbf7d0; color: #16a34a; padding: 0.35rem 0.75rem; border-radius: 6px; font-size: 0.825rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem; transition: all 0.15s ease;" onmouseover="this.style.background='#dcfce7'" onmouseout="this.style.background='#f0fdf4'">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                <span>Tambah Sub</span>
+                            </button>
+                        </div>
+                    </td>
+                    <td style="padding: 1rem;">
                         <div style="display:flex; gap:0.5rem;">
                             <button onclick="editCategory({{ json_encode($cat) }})" class="btn btn-secondary btn-sm">Edit</button>
                             <form method="POST" action="{{ route('admin.categories.destroy', $cat) }}" onsubmit="return confirm('Hapus kategori ini beserta sub-kategori didalamnya?')">
@@ -221,51 +246,13 @@
                     </td>
                 </tr>
                 @empty
-                <tr><td colspan="4" style="padding:2rem; text-align:center; color:#64748b;">Belum ada kategori. Silakan tambahkan terlebih dahulu.</td></tr>
+                <tr><td colspan="5" style="padding:2rem; text-align:center; color:#64748b;">Belum ada kategori. Silakan tambahkan terlebih dahulu.</td></tr>
                 @endforelse
             </tbody>
         </table>
     </div>
 
-    <!-- TAB 3: SUB KATEGORI -->
-    <div id="tab-subcategory" class="tab-content">
-        <table style="width: 100%; border-collapse: collapse;">
-            <thead>
-                <tr style="border-bottom: 2px solid #f1f5f9; text-align: left;">
-                    <th style="padding: 0.75rem 1rem;">#</th>
-                    <th style="padding: 0.75rem 1rem;">Grup &rarr; Kode &rarr; Kategori</th>
-                    <th style="padding: 0.75rem 1rem;">Nama Sub Kategori</th>
-                    <th style="padding: 0.75rem 1rem;">Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($subCategories as $i => $sub)
-                <tr style="border-bottom: 1px solid #f1f5f9;">
-                    <td style="padding: 1rem; color: #64748b;">{{ $i+1 }}</td>
-                    <td style="padding: 1rem;">
-                        <span style="font-weight:700; color:#475569;">{{ $sub->category->questionCode->group->name ?? '—' }}</span>
-                        <span style="color:#cbd5e1; margin:0 0.25rem;">&rarr;</span>
-                        <span class="badge-code">{{ $sub->category->questionCode->code ?? '—' }}</span>
-                        <span style="color:#cbd5e1; margin:0 0.25rem;">&rarr;</span>
-                        <span style="font-weight:500; color: #64748b;">{{ $sub->category->name ?? '—' }}</span>
-                    </td>
-                    <td style="padding: 1rem; font-weight: 600; color: #1e293b;">{{ $sub->name }}</td>
-                    <td style="padding: 1rem;">
-                        <div style="display:flex; gap:0.5rem;">
-                            <button onclick="editSubCategory({{ json_encode($sub) }})" class="btn btn-secondary btn-sm">Edit</button>
-                            <form method="POST" action="{{ route('admin.categories.destroySubCategory', $sub) }}" onsubmit="return confirm('Hapus sub kategori ini?')">
-                                @csrf @method('DELETE')
-                                <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>
-                @empty
-                <tr><td colspan="4" style="padding:2rem; text-align:center; color:#64748b;">Belum ada sub kategori.</td></tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
+
 </div>
 
 <!-- ==============================================
@@ -416,7 +403,7 @@
             <div class="modal-body">
                 <div class="form-group">
                     <label>Kategori (Induk)</label>
-                    <select name="category_id" required>
+                    <select name="category_id" id="add_sub_category_parent_id" required>
                         @foreach($categories as $cat)
                             <option value="{{ $cat->id }}">[{{ $cat->questionCode->group->name }} - {{ $cat->questionCode->code }}] {{ $cat->name }}</option>
                         @endforeach
@@ -472,6 +459,9 @@
 <script>
     // Tab Switching
     function switchTab(tabName) {
+        if (tabName === 'subcategory') {
+            tabName = 'category';
+        }
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
         
@@ -484,7 +474,6 @@
         // Update button visibility
         document.getElementById('btn-add-code').style.display = (tabName === 'code') ? 'inline-block' : 'none';
         document.getElementById('btn-add-category').style.display = (tabName === 'category') ? 'inline-block' : 'none';
-        document.getElementById('btn-add-subcategory').style.display = (tabName === 'subcategory') ? 'inline-block' : 'none';
 
         // Update URL parameter
         const url = new URL(window.location);
@@ -523,6 +512,15 @@
         document.getElementById('edit_sub_category_id').value = subObj.category_id;
         document.getElementById('edit_sub_name').value = subObj.name;
         openModal('editSubCategoryModal');
+    }
+
+    // Helper to add subcategory directly for a category
+    function addSubCategoryForCategory(catId) {
+        const select = document.getElementById('add_sub_category_parent_id');
+        if (select) {
+            select.value = catId;
+        }
+        openModal('addSubCategoryModal');
     }
 
     // On Load: read URL parameter and switch to tab

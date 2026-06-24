@@ -5,7 +5,8 @@
 @endsection
 
 @section('content')
-<form method="GET" class="filter-bar">
+<form method="GET" class="filter-bar" style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
+    <input type="text" name="search" class="form-control" placeholder="Cari nama peserta atau paket..." value="{{ request('search') }}" style="flex:1; min-width:200px; max-width:300px;">
     <select name="tryout_package_id" class="form-control" style="max-width:280px;">
         <option value="">Semua Paket Tryout</option>
         @foreach($packages as $p)
@@ -13,7 +14,7 @@
         @endforeach
     </select>
     <button type="submit" class="btn btn-secondary">Filter</button>
-    @if(request('tryout_package_id'))
+    @if(request('tryout_package_id') || request('search'))
         <a href="{{ route('admin.rekap.index') }}" class="btn btn-secondary">Reset</a>
     @endif
 </form>
@@ -28,6 +29,7 @@
                 <th>#</th>
                 <th>Peserta</th>
                 <th>Paket</th>
+                <th>Rank</th>
                 <th>TWK</th>
                 <th>TIU</th>
                 <th>TKP</th>
@@ -46,6 +48,9 @@
                     <small style="color:var(--text-muted);">{{ $r->user->no_peserta ?? $r->user->email }}</small>
                 </td>
                 <td style="font-size:0.82rem;">{{ Str::limit($r->tryoutPackage->nama, 35) }}</td>
+                <td>
+                    <span class="badge badge-warning" style="font-weight: 700; background: #FEF3C7; color: #B45309; border: 1px solid #FDE68A;">#{{ $rankingsMap[$r->id] ?? '-' }}</span>
+                </td>
                 <td><strong>{{ $r->skor_twk }}</strong></td>
                 <td><strong>{{ $r->skor_tiu }}</strong></td>
                 <td><strong>{{ $r->skor_tkp }}</strong></td>

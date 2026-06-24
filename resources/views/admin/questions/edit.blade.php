@@ -108,7 +108,7 @@
         {{-- Soal / Pertanyaan --}}
         <div class="form-group" style="margin-bottom:1.25rem;">
             <label style="font-weight:600; display:block; margin-bottom:0.5rem;">Soal / Pertanyaan <span style="color:#ef4444;">*</span></label>
-            <textarea name="soal" class="form-control" rows="3" placeholder="Tuliskan soal di sini (mendukung formula LaTeX/KaTeX)..." required style="width:100%; padding:0.625rem; border-radius:6px; border:1px solid #cbd5e1; font-family:inherit;">{{ old('soal', $question->soal) }}</textarea>
+            <textarea name="soal" class="form-control" rows="3" placeholder="Tuliskan soal di sini (mendukung formula LaTeX/KaTeX)..." style="width:100%; padding:0.625rem; border-radius:6px; border:1px solid #cbd5e1; font-family:inherit;">{{ old('soal', $question->soal) }}</textarea>
             @error('soal')<p class="form-error" style="color:#ef4444; font-size:0.75rem; margin-top:0.25rem;">{{ $message }}</p>@enderror
         </div>
 
@@ -134,11 +134,11 @@
         <div style="display:grid; grid-template-columns:1fr; gap:1.25rem; margin-bottom:1.5rem;">
             @foreach(['a','b','c','d','e'] as $opsi)
             <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:1rem 1.25rem; border-radius:8px;">
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                <div style="display:grid; grid-template-columns: 2fr 2fr 1fr; gap:1rem;">
                     <div class="form-group" style="margin-bottom:0;">
                         <label style="font-weight:700; color:#334155;">Teks Opsi {{ strtoupper($opsi) }} {{ $opsi === 'e' ? '(Opsional)' : '' }}</label>
                         <input type="text" name="opsi_{{ $opsi }}" class="form-control" value="{{ old('opsi_'.$opsi, $question->{'opsi_'.$opsi}) }}"
-                            placeholder="Teks Pilihan {{ strtoupper($opsi) }}" {{ $opsi !== 'e' ? 'required' : '' }} style="width:100%; padding:0.625rem; border-radius:6px; border:1px solid #cbd5e1; margin-top:0.25rem;">
+                            placeholder="Teks Pilihan {{ strtoupper($opsi) }}" style="width:100%; padding:0.625rem; border-radius:6px; border:1px solid #cbd5e1; margin-top:0.25rem;">
                         @error('opsi_'.$opsi)<p class="form-error" style="color:#ef4444; font-size:0.75rem; margin-top:0.25rem;">{{ $message }}</p>@enderror
                     </div>
                     <div class="form-group" style="margin-bottom:0;">
@@ -154,6 +154,11 @@
                         @endif
                         <input type="file" name="option_{{ $opsi }}_image" class="form-control" accept="image/*" style="width:100%; padding:0.5rem; border-radius:6px; border:1px solid #cbd5e1; margin-top:0.25rem;">
                         @error('option_'.$opsi.'_image')<p class="form-error" style="color:#ef4444; font-size:0.75rem; margin-top:0.25rem;">{{ $message }}</p>@enderror
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label style="font-weight:700; color:#334155;">Bobot Skor</label>
+                        <input type="number" name="score_{{ $opsi }}" class="form-control" value="{{ old('score_'.$opsi, $question->{'score_'.$opsi}) }}" min="0" max="10" required style="width:100%; padding:0.625rem; border-radius:6px; border:1px solid #cbd5e1; margin-top:0.25rem;">
+                        @error('score_'.$opsi)<p class="form-error" style="color:#ef4444; font-size:0.75rem; margin-top:0.25rem;">{{ $message }}</p>@enderror
                     </div>
                 </div>
             </div>

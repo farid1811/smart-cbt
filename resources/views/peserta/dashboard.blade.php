@@ -489,7 +489,24 @@
         @endphp
         <div class="tryout-card card-drill">
             <div style="flex:1;min-width:0;">
+                @if(!empty($tryout->token))
+                    <div style="margin-bottom:0.5rem; display:flex; gap:0.25rem;">
+                        <span class="badge" style="background:#FEF2F2; color:#EF4444; border-color:#FEE2E2; font-size:0.65rem; font-weight:700; padding:0.15rem 0.45rem; border-radius:4px; display:inline-flex; align-items:center; gap:0.25rem;">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                            Butuh Token
+                        </span>
+                    </div>
+                @endif
                 <h4 style="font-size:0.95rem;font-weight:700;color:var(--text);line-height:1.3;">{{ $tryout->nama }}</h4>
+                @if($tryout->jenis_ujian === 'drill' && $tryout->categoryRelation)
+                    <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.25rem; font-weight:600;">
+                        {{ $tryout->categoryRelation->name }}
+                        @if($tryout->subCategory)
+                            <span style="color:#cbd5e1; margin:0 0.15rem;">&rarr;</span>
+                            <span style="color:var(--primary); font-weight:700;">{{ $tryout->subCategory->name }}</span>
+                        @endif
+                    </div>
+                @endif
                 @if($tryout->deskripsi)
                     <p style="font-size:0.8rem;color:var(--text-muted);margin-top:0.5rem;line-height:1.4;">{{ Str::limit($tryout->deskripsi, 90) }}</p>
                 @endif
@@ -556,6 +573,14 @@
         @endphp
         <div class="tryout-card card-tryout">
             <div style="flex:1;min-width:0;">
+                @if(!empty($tryout->token))
+                    <div style="margin-bottom:0.5rem; display:flex; gap:0.25rem;">
+                        <span class="badge" style="background:#FEF2F2; color:#EF4444; border-color:#FEE2E2; font-size:0.65rem; font-weight:700; padding:0.15rem 0.45rem; border-radius:4px; display:inline-flex; align-items:center; gap:0.25rem;">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                            Butuh Token
+                        </span>
+                    </div>
+                @endif
                 <h4 style="font-size:0.95rem;font-weight:700;color:var(--text);line-height:1.3;">{{ $tryout->nama }}</h4>
                 @if($tryout->deskripsi)
                     <p style="font-size:0.8rem;color:var(--text-muted);margin-top:0.5rem;line-height:1.4;">{{ Str::limit($tryout->deskripsi, 90) }}</p>

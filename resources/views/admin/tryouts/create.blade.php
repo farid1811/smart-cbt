@@ -23,16 +23,59 @@
             <textarea name="deskripsi" class="form-control" placeholder="Deskripsi paket..." rows="3">{{ old('deskripsi') }}</textarea>
         </div>
 
-        {{-- Program/Grup, Kategori & Batas Percobaan --}}
+        {{-- Program/Grup, Kategori, Kode, Sub Kategori & Batas Percobaan --}}
+        @if(old('jenis_ujian', request('type', 'tryout')) === 'drill')
         <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:1rem; margin-bottom:1rem;">
             <div class="form-group" style="margin-bottom:0;">
                 <label>Program / Grup <span style="color:#ef4444;">*</span></label>
-                <select name="group" id="groupSelect" class="form-control @error('group') is-invalid @enderror" required onchange="updateCategories()">
+                <select name="group_id" id="groupSelect" class="form-control @error('group_id') is-invalid @enderror" required onchange="loadCodes()">
                     <option value="">-- Pilih --</option>
-                    <option value="SKD" {{ old('group') === 'SKD' ? 'selected' : '' }}>SKD</option>
-                    <option value="SNBT" {{ old('group') === 'SNBT' ? 'selected' : '' }}>SNBT</option>
+                    @foreach($groups as $g)
+                        <option value="{{ $g->id }}" {{ old('group_id') == $g->id ? 'selected' : '' }}>{{ $g->name }}</option>
+                    @endforeach
                 </select>
-                @error('group')<p class="form-error">{{ $message }}</p>@enderror
+                @error('group_id')<p class="form-error">{{ $message }}</p>@enderror
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+                <label>Kode Soal <span style="color:#ef4444;">*</span></label>
+                <select name="question_code_id" id="codeSelect" class="form-control @error('question_code_id') is-invalid @enderror" required onchange="loadCategories()">
+                    <option value="">-- Pilih --</option>
+                </select>
+                @error('question_code_id')<p class="form-error">{{ $message }}</p>@enderror
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+                <label>Batas Percobaan <span style="color:#ef4444;">*</span></label>
+                <input type="number" name="attempt_limit" class="form-control @error('attempt_limit') is-invalid @enderror" value="{{ old('attempt_limit', 2) }}" min="1" required>
+                @error('attempt_limit')<p class="form-error">{{ $message }}</p>@enderror
+            </div>
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem; margin-bottom:1rem;">
+            <div class="form-group" style="margin-bottom:0;">
+                <label>Kategori <span style="color:#ef4444;">*</span></label>
+                <select name="category_id" id="categorySelect" class="form-control @error('category_id') is-invalid @enderror" required onchange="loadSubCategories()">
+                    <option value="">-- Pilih --</option>
+                </select>
+                @error('category_id')<p class="form-error">{{ $message }}</p>@enderror
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+                <label>Sub Kategori (Opsional)</label>
+                <select name="sub_category_id" id="subCategorySelect" class="form-control @error('sub_category_id') is-invalid @enderror">
+                    <option value="">-- Semua Sub Kategori --</option>
+                </select>
+                @error('sub_category_id')<p class="form-error">{{ $message }}</p>@enderror
+            </div>
+        </div>
+        @else
+        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:1rem; margin-bottom:1rem;">
+            <div class="form-group" style="margin-bottom:0;">
+                <label>Program / Grup <span style="color:#ef4444;">*</span></label>
+                <select name="group_id" id="groupSelect" class="form-control @error('group_id') is-invalid @enderror" required onchange="updateCategories()">
+                    <option value="">-- Pilih --</option>
+                    @foreach($groups as $g)
+                        <option value="{{ $g->id }}" data-name="{{ $g->name }}" {{ old('group_id') == $g->id ? 'selected' : '' }}>{{ $g->name }}</option>
+                    @endforeach
+                </select>
+                @error('group_id')<p class="form-error">{{ $message }}</p>@enderror
             </div>
             <div class="form-group" style="margin-bottom:0;">
                 <label>Kategori <span style="color:#ef4444;">*</span></label>
@@ -47,6 +90,7 @@
                 @error('attempt_limit')<p class="form-error">{{ $message }}</p>@enderror
             </div>
         </div>
+        @endif
 
         <div class="form-row">
             <div class="form-group">
@@ -86,6 +130,32 @@
             </div>
         </div>
 
+        {{-- Token & Randomization --}}
+        <div class="form-row">
+            <div class="form-group">
+                <label>Token Akses Ujian (Opsional)</label>
+                <input type="text" name="token" class="form-control" value="{{ old('token') }}" placeholder="Contoh: SKD2026 (Wajib diisi jika diatur)" style="text-transform: uppercase;">
+                <small style="color:var(--text-muted); display:block; margin-top:0.25rem;">Peserta wajib memasukkan token ini sebelum dapat memulai ujian.</small>
+            </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem; margin-bottom:1.5rem; border: 1px solid var(--border); padding: 1rem; border-radius: 8px; background: #fcfcfc;">
+            <div class="form-group" style="margin-bottom:0;">
+                <label class="toggle" style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                    <input type="checkbox" name="randomize_questions" value="1" {{ old('randomize_questions') ? 'checked' : '' }} style="width:16px; height:16px; accent-color:var(--primary);">
+                    <span class="toggle-label" style="font-weight:600; font-size:0.85rem; color:var(--text);">Acak Urutan Soal</span>
+                </label>
+                <small style="color:var(--text-muted); display:block; margin-top:0.25rem;">Setiap peserta akan menerima urutan soal yang berbeda.</small>
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+                <label class="toggle" style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                    <input type="checkbox" name="randomize_options" value="1" {{ old('randomize_options') ? 'checked' : '' }} style="width:16px; height:16px; accent-color:var(--primary);">
+                    <span class="toggle-label" style="font-weight:600; font-size:0.85rem; color:var(--text);">Acak Pilihan Jawaban</span>
+                </label>
+                <small style="color:var(--text-muted); display:block; margin-top:0.25rem;">Setiap peserta akan menerima urutan pilihan (A-E) yang berbeda.</small>
+            </div>
+        </div>
+
         <div class="form-group">
             <label class="toggle" style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
                 <input type="checkbox" name="is_active" value="1" {{ old('is_active', true) ? 'checked' : '' }} style="width:16px; height:16px; accent-color:var(--primary);">
@@ -122,20 +192,23 @@ function toggleSebFields() {
     }
 }
 
-const categoriesByGroup = {
+const categoriesByGroupName = {
     SKD: ['CPNS', 'Kedinasan'],
     SNBT: ['SNBT']
 };
 
 function updateCategories() {
-    const group = document.getElementById('groupSelect').value;
+    const groupSelect = document.getElementById('groupSelect');
+    if (!groupSelect) return;
+    const selectedOption = groupSelect.options[groupSelect.selectedIndex];
+    const groupName = selectedOption ? selectedOption.getAttribute('data-name') : '';
     const categorySelect = document.getElementById('categorySelect');
     const oldCategory = "{{ old('category') }}";
     
     categorySelect.innerHTML = '<option value="">-- Pilih --</option>';
     
-    if (group && categoriesByGroup[group]) {
-        categoriesByGroup[group].forEach(cat => {
+    if (groupName && categoriesByGroupName[groupName]) {
+        categoriesByGroupName[groupName].forEach(cat => {
             const opt = document.createElement('option');
             opt.value = cat;
             opt.textContent = cat;
@@ -145,8 +218,79 @@ function updateCategories() {
     }
 }
 
+async function loadCodes() {
+    const groupId = document.getElementById('groupSelect').value;
+    const codeSelect = document.getElementById('codeSelect');
+    const categorySelect = document.getElementById('categorySelect');
+    const subCategorySelect = document.getElementById('subCategorySelect');
+    
+    codeSelect.innerHTML = '<option value="">-- Pilih --</option>';
+    categorySelect.innerHTML = '<option value="">-- Pilih --</option>';
+    subCategorySelect.innerHTML = '<option value="">-- Semua Sub Kategori --</option>';
+    
+    if (!groupId) return;
+    
+    const res = await fetch(`/admin/api/codes/${groupId}`);
+    const codes = await res.json();
+    codes.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = `[${c.code}] ${c.name}`;
+        codeSelect.appendChild(opt);
+    });
+}
+
+async function loadCategories() {
+    const codeId = document.getElementById('codeSelect').value;
+    const categorySelect = document.getElementById('categorySelect');
+    const subCategorySelect = document.getElementById('subCategorySelect');
+    
+    categorySelect.innerHTML = '<option value="">-- Pilih --</option>';
+    subCategorySelect.innerHTML = '<option value="">-- Semua Sub Kategori --</option>';
+    
+    if (!codeId) return;
+    
+    const res = await fetch(`/admin/api/categories/${codeId}`);
+    const categories = await res.json();
+    categories.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = c.name;
+        categorySelect.appendChild(opt);
+    });
+}
+
+async function loadSubCategories() {
+    const categoryId = document.getElementById('categorySelect').value;
+    const subCategorySelect = document.getElementById('subCategorySelect');
+    
+    subCategorySelect.innerHTML = '<option value="">-- Semua Sub Kategori --</option>';
+    
+    if (!categoryId) return;
+    
+    const res = await fetch(`/admin/api/subcategories/${categoryId}`);
+    const subCategories = await res.json();
+    subCategories.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.id;
+        opt.textContent = s.name;
+        subCategorySelect.appendChild(opt);
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
-    updateCategories();
+    @if(old('jenis_ujian', request('type', 'tryout')) === 'drill')
+        // Load initial if there's old input
+        const oldGroupId = "{{ old('group_id') }}";
+        const oldCodeId = "{{ old('question_code_id') }}";
+        const oldCategoryId = "{{ old('category_id') }}";
+        const oldSubCategoryId = "{{ old('sub_category_id') }}";
+        
+        // Dynamic chain loading for old values would be here if needed,
+        // but for creation page, old input on error is handled simply.
+    @else
+        updateCategories();
+    @endif
     toggleSebFields();
 });
 </script>

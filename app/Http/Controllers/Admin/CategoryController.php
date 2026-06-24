@@ -40,10 +40,9 @@ class CategoryController extends Controller
     {
         $groups = Group::all();
         $codes = QuestionCode::with('group')->get();
-        $categories = Category::with('questionCode.group')->get();
-        $subCategories = SubCategory::with('category.questionCode.group')->get();
+        $categories = Category::with(['questionCode.group', 'subCategories'])->get();
 
-        return view('admin.categories.index', compact('groups', 'codes', 'categories', 'subCategories'));
+        return view('admin.categories.index', compact('groups', 'codes', 'categories'));
     }
 
     // Question Code Store/Update/Destroy
@@ -121,7 +120,7 @@ class CategoryController extends Controller
         ]);
 
         SubCategory::create($validated);
-        return redirect()->route('admin.categories.index', ['tab' => 'subcategory'])->with('success', 'Sub Kategori berhasil ditambahkan.');
+        return redirect()->route('admin.categories.index', ['tab' => 'category'])->with('success', 'Sub Kategori berhasil ditambahkan.');
     }
 
     public function updateSubCategory(Request $request, SubCategory $subcategory)
@@ -132,7 +131,7 @@ class CategoryController extends Controller
         ]);
 
         $subcategory->update($validated);
-        return redirect()->route('admin.categories.index', ['tab' => 'subcategory'])->with('success', 'Sub Kategori berhasil diperbarui.');
+        return redirect()->route('admin.categories.index', ['tab' => 'category'])->with('success', 'Sub Kategori berhasil diperbarui.');
     }
 
     public function destroySubCategory(SubCategory $subcategory)
@@ -141,7 +140,7 @@ class CategoryController extends Controller
             return back()->with('error', 'Sub Kategori tidak bisa dihapus karena masih digunakan oleh soal.');
         }
         $subcategory->delete();
-        return redirect()->route('admin.categories.index', ['tab' => 'subcategory'])->with('success', 'Sub Kategori berhasil dihapus.');
+        return redirect()->route('admin.categories.index', ['tab' => 'category'])->with('success', 'Sub Kategori berhasil dihapus.');
     }
 }
 

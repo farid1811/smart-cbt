@@ -31,10 +31,15 @@
         @csrf
 
         @foreach($questions as $index => $q)
-        <div class="table-card" style="margin-bottom: 2rem; padding: 1.5rem; border-radius: 12px; background:#fff; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);">
+        <div class="table-card" style="margin-bottom: 2rem; padding: 1.5rem; border-radius: 12px; background:#fff; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05); {{ ($q['review_required'] ?? false) ? 'border: 2px solid #ef4444;' : '' }}">
             <div style="display:grid; grid-template-columns: 1fr; gap:1rem; border-bottom:1px solid #f1f5f9; padding-bottom:1rem; margin-bottom:1.25rem;">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <h4 style="margin:0; font-weight:700; color:#0f172a; font-size:1.1rem;">Soal #{{ $index + 1 }}</h4>
+                    <div style="display:flex; align-items:center; gap:0.75rem;">
+                        <h4 style="margin:0; font-weight:700; color:#0f172a; font-size:1.1rem;">Soal #{{ $index + 1 }}</h4>
+                        @if($q['review_required'] ?? false)
+                            <span style="background:#fee2e2; color:#ef4444; font-size:0.75rem; font-weight:700; padding:0.25rem 0.5rem; border-radius:4px; border:1px solid #fca5a5;">⚠️ REVIEW REQUIRED: Gambar Gagal Diekstrak</span>
+                        @endif
+                    </div>
                     
                     {{-- Tingkat Kesulitan --}}
                     <div>
@@ -75,7 +80,7 @@
             {{-- Soal Teks & Gambar --}}
             <div class="form-group" style="margin-bottom: 1.25rem;">
                 <label class="form-label" style="font-weight:700; font-size:0.9rem; color:#334155;">Isi Soal</label>
-                <textarea name="q[{{ $index }}][soal]" class="form-control" rows="3" required style="font-size:0.88rem; width:100%; border-radius:6px; border:1px solid #cbd5e1; padding:0.5rem;">{{ $q['soal'] }}</textarea>
+                <textarea name="q[{{ $index }}][soal]" class="form-control" rows="3" style="font-size:0.88rem; width:100%; border-radius:6px; border:1px solid #cbd5e1; padding:0.5rem;">{{ $q['soal'] }}</textarea>
                 @if($q['question_image'])
                     <div style="margin-top:0.75rem; display:flex; align-items:center; gap:0.5rem;">
                         <img src="{{ asset($q['question_image']) }}" alt="Soal Gambar" style="max-height:120px; border-radius:6px; border:1px solid #cbd5e1;">
@@ -87,16 +92,19 @@
             {{-- Opsi A - E --}}
             <div style="display:grid; grid-template-columns:1fr; gap:0.75rem; margin-bottom:1.25rem;">
                 @foreach(['a', 'b', 'c', 'd', 'e'] as $opt)
-                <div style="display:flex; align-items:flex-start; gap:0.5rem; border:1px solid #e2e8f0; padding:0.75rem; border-radius:8px; background:#f8fafc;">
-                    <span style="font-weight:700; color:#1e40af; font-size:0.9rem; margin-top:0.4rem; width:20px;">{{ strtoupper($opt) }}</span>
-                    <div style="flex:1;">
-                        <input type="text" name="q[{{ $index }}][opsi_{{ $opt }}]" class="form-control" value="{{ $q['opsi_' . $opt] }}" style="font-size:0.85rem; width:100%; padding:0.4rem; border-radius:4px; border:1px solid #cbd5e1;" {{ $opt !== 'e' ? 'required' : '' }} placeholder="Opsi {{ strtoupper($opt) }} (Opsional)">
+                <div style="display:flex; align-items:center; gap:0.75rem; border:1px solid #e2e8f0; padding:0.75rem; border-radius:8px; background:#f8fafc;">
+                    <span style="font-weight:700; color:#1e40af; font-size:0.9rem; width:20px;">{{ strtoupper($opt) }}</span>
+                    <div style="flex:3;">
+                        <input type="text" name="q[{{ $index }}][opsi_{{ $opt }}]" class="form-control" value="{{ $q['opsi_' . $opt] }}" style="font-size:0.85rem; width:100%; padding:0.4rem; border-radius:4px; border:1px solid #cbd5e1;" placeholder="Opsi {{ strtoupper($opt) }} (Opsional)">
                         @if($q['option_' . $opt . '_image'])
                             <div style="margin-top:0.5rem; display:flex; align-items:center; gap:0.5rem;">
                                 <img src="{{ asset($q['option_' . $opt . '_image']) }}" alt="Opsi {{ strtoupper($opt) }} Gambar" style="max-height:80px; border-radius:4px; border:1px solid #cbd5e1;">
                                 <span style="font-size:0.7rem; color:#64748b;">[Gambar Opsi {{ strtoupper($opt) }}]</span>
                             </div>
                         @endif
+                    </div>
+                    <div style="flex:1; max-width:80px; display:flex; align-items:center; gap:0.25rem;">
+                        <input type="number" name="q[{{ $index }}][score_{{ $opt }}]" class="form-control" value="{{ $q['score_' . $opt] ?? 0 }}" min="0" max="10" required style="font-size:0.85rem; width:100%; padding:0.4rem; border-radius:4px; border:1px solid #cbd5e1; text-align:center;" placeholder="Skor">
                     </div>
                 </div>
                 @endforeach
@@ -142,7 +150,7 @@
 
 <!-- Dynamic Dependent Dropdowns Fetch Logic -->
 <script>
-    async function loadCategories(index, codeId) {
+    async function loadCategories(index, codeId, selectedCatId = null) {
         const catSelect = document.getElementById(`category_select_${index}`);
         const subSelect = document.getElementById(`subcategory_select_${index}`);
         
@@ -166,6 +174,16 @@
                     catSelect.appendChild(opt);
                 });
                 catSelect.disabled = false;
+                
+                // Auto-select first category or selectedCatId
+                if (selectedCatId) {
+                    catSelect.value = selectedCatId;
+                } else {
+                    catSelect.selectedIndex = 1;
+                }
+                
+                // Trigger loading subcategories
+                loadSubCategories(index, catSelect.value);
             } else {
                 catSelect.innerHTML = '<option value="">(Tidak ada kategori)</option>';
             }
@@ -174,7 +192,7 @@
         }
     }
 
-    async function loadSubCategories(index, categoryId) {
+    async function loadSubCategories(index, categoryId, selectedSubCatId = null) {
         const subSelect = document.getElementById(`subcategory_select_${index}`);
         
         // Reset and disable subcategory input
@@ -195,6 +213,13 @@
                     subSelect.appendChild(opt);
                 });
                 subSelect.disabled = false;
+                
+                // Auto-select first subcategory or selectedSubCatId
+                if (selectedSubCatId) {
+                    subSelect.value = selectedSubCatId;
+                } else {
+                    subSelect.selectedIndex = 1;
+                }
             } else {
                 subSelect.innerHTML = '<option value="">(Tidak ada sub kategori)</option>';
             }

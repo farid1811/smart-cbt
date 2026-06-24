@@ -207,17 +207,25 @@
         <div class="tryout-card">
             <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:0.5rem;">
                 <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
-                    @if($tryout->exam_mode === 'seb')
-                        <span class="security-badge security-seb">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                            SEB Mode
-                        </span>
-                    @else
-                        <span class="security-badge security-normal">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-                            Normal Mode
-                        </span>
-                    @endif
+                    <div style="display:flex; gap:0.35rem; align-items:center;">
+                        @if($tryout->exam_mode === 'seb')
+                            <span class="security-badge security-seb">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                                SEB Mode
+                            </span>
+                        @else
+                            <span class="security-badge security-normal">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                                Normal Mode
+                            </span>
+                        @endif
+                        @if(!empty($tryout->token))
+                            <span class="badge" style="background:#FEF2F2; color:#EF4444; border-color:#FEE2E2; font-size:0.65rem; font-weight:700; padding:0.15rem 0.45rem; border-radius:4px; display:inline-flex; align-items:center; gap:0.25rem; border: 1px solid #FEE2E2; line-height: 1;">
+                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                                Butuh Token
+                            </span>
+                        @endif
+                    </div>
                     
                     <span style="font-size:0.72rem; color:var(--text-muted); font-weight:600;">
                         Limit: {{ $limit }}x

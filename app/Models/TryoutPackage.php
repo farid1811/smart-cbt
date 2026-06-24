@@ -12,7 +12,11 @@ class TryoutPackage extends Model
         'deskripsi',
         'jenis_ujian',
         'group',
+        'group_id',
         'category',
+        'category_id',
+        'question_code_id',
+        'sub_category_id',
         'attempt_limit',
         'durasi_menit',
         'is_active',
@@ -22,6 +26,9 @@ class TryoutPackage extends Model
         'seb_url',
         'seb_quit_password',
         'seb_browser_lockdown',
+        'token',
+        'randomize_questions',
+        'randomize_options',
     ];
 
     protected $casts = [
@@ -30,6 +37,26 @@ class TryoutPackage extends Model
         'selesai_at' => 'datetime',
         'seb_browser_lockdown' => 'boolean',
     ];
+
+    public function groupRelation()
+    {
+        return $this->belongsTo(Group::class, 'group_id');
+    }
+
+    public function questionCode()
+    {
+        return $this->belongsTo(QuestionCode::class, 'question_code_id');
+    }
+
+    public function categoryRelation()
+    {
+        return $this->belongsTo(Category::class, 'category_id');
+    }
+
+    public function subCategory()
+    {
+        return $this->belongsTo(SubCategory::class, 'sub_category_id');
+    }
 
     public function questions()
     {

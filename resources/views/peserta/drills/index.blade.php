@@ -185,9 +185,17 @@
         <div class="tryout-card">
             <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:0.5rem;">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span class="badge badge-TWK" style="background:#ECFDF5; color:var(--success); border-color:#A7F3D0; font-weight:700; text-transform:uppercase;">
-                        {{ $tryout->jenis_ujian }}
-                    </span>
+                    <div style="display:flex; gap:0.35rem; align-items:center;">
+                        <span class="badge badge-TWK" style="background:#ECFDF5; color:var(--success); border-color:#A7F3D0; font-weight:700; text-transform:uppercase;">
+                            {{ $tryout->jenis_ujian }}
+                        </span>
+                        @if(!empty($tryout->token))
+                            <span class="badge" style="background:#FEF2F2; color:#EF4444; border-color:#FEE2E2; font-size:0.65rem; font-weight:700; padding:0.15rem 0.45rem; border-radius:4px; display:inline-flex; align-items:center; gap:0.25rem; border: 1px solid #FEE2E2;">
+                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                                Butuh Token
+                            </span>
+                        @endif
+                    </div>
                     <span style="font-size:0.72rem; color:var(--text-muted); font-weight:600;">
                         Limit: {{ $limit }}x
                     </span>
@@ -196,6 +204,15 @@
                 <h4 style="font-size:1.05rem; font-weight:800; color:var(--text); line-height:1.3; margin-top:0.25rem;">
                     {{ $tryout->nama }}
                 </h4>
+                @if($tryout->categoryRelation)
+                    <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.25rem; font-weight:600;">
+                        {{ $tryout->categoryRelation->name }}
+                        @if($tryout->subCategory)
+                            <span style="color:#cbd5e1; margin:0 0.15rem;">&rarr;</span>
+                            <span style="color:var(--primary); font-weight:700;">{{ $tryout->subCategory->name }}</span>
+                        @endif
+                    </div>
+                @endif
                 
                 @if($tryout->deskripsi)
                     <p style="font-size:0.82rem; color:var(--text-muted); line-height:1.5;">

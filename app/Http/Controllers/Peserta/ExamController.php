@@ -17,7 +17,7 @@ class ExamController extends Controller
     /**
      * Mulai sesi ujian baru.
      */
-    public function start(TryoutPackage $package)
+    public function start(TryoutPackage $package, Request $request)
     {
         // Cek apakah tryout tersedia
         if (!$package->isAvailable()) {
@@ -49,6 +49,17 @@ class ExamController extends Controller
             return redirect()->route('peserta.dashboard')->with('error', 'Anda telah mencapai batas maksimum percobaan (' . $package->attempt_limit . 'x) untuk paket ini.');
         }
 
+        // Cek token jika diatur
+        if ($package->token) {
+            $submittedToken = strtoupper(trim($request->input('token')));
+            $expectedToken = strtoupper(trim($package->token));
+            
+            if ($submittedToken !== $expectedToken) {
+                $errorMsg = $request->has('token') ? 'Token akses yang Anda masukkan salah.' : null;
+                return view('peserta.exam.token_entry', compact('package', 'errorMsg'));
+            }
+        }
+
         // Buat record attempt baru
         \App\Models\PackageAttempt::create([
             'participant_id' => $userId,
@@ -65,21 +76,26 @@ class ExamController extends Controller
             'status'            => 'berlangsung',
         ]);
 
-        $questions = $package->questions;
+        $questions = $package->questions()->orderBy('urutan')->get();
         $questionIds = $questions->pluck('id')->toArray();
-        shuffle($questionIds); // Acak urutan soal
+        if ($package->randomize_questions) {
+            shuffle($questionIds); // Acak urutan soal jika dikonfigurasi
+        }
 
-        // Simpan urutan acak ke session
+        // Simpan urutan ke session
         $session->update(['soal_order' => $questionIds]);
 
-        // Pre-create jawaban kosong untuk semua soal dengan opsi teracak
+        // Pre-create jawaban kosong untuk semua soal
         foreach ($questions as $question) {
             $opts = ['A', 'B', 'C', 'D'];
             if ($question->opsi_e) {
                 $opts[] = 'E';
             }
+            
             $shuffledOpts = $opts;
-            shuffle($shuffledOpts);
+            if ($package->randomize_options) {
+                shuffle($shuffledOpts); // Acak opsi jika dikonfigurasi
+            }
 
             $mapping = [];
             foreach ($opts as $index => $visualKey) {
@@ -322,21 +338,48 @@ class ExamController extends Controller
                     $kosong++;
                     $codeKosong++;
                 } else {
-                    $isCorrect = $ans->isBenar();
-                    if ($isCorrect) {
-                        $benar++;
-                        $codeBenar++;
-                        if ($isSkd) {
-                            $codePoints += 5;
+                    if ($isSkd && $codeVal === 'TKP') {
+                        $visualKey = $ans->jawaban;
+                        $mapping = $ans->options_mapping;
+                        $originalKey = ($mapping && isset($mapping[$visualKey])) ? $mapping[$visualKey] : $visualKey;
+                        $originalKeyLower = strtolower($originalKey);
+                        
+                        $optScore = 0;
+                        if ($originalKeyLower === 'a') $optScore = (int)$ans->question->score_a;
+                        elseif ($originalKeyLower === 'b') $optScore = (int)$ans->question->score_b;
+                        elseif ($originalKeyLower === 'c') $optScore = (int)$ans->question->score_c;
+                        elseif ($originalKeyLower === 'd') $optScore = (int)$ans->question->score_d;
+                        elseif ($originalKeyLower === 'e') $optScore = (int)$ans->question->score_e;
+
+                        $codePoints += $optScore;
+
+                        // Check if they achieved the maximum possible score to count as "benar"
+                        $maxScore = max(
+                            (int)$ans->question->score_a,
+                            (int)$ans->question->score_b,
+                            (int)$ans->question->score_c,
+                            (int)$ans->question->score_d,
+                            (int)$ans->question->score_e
+                        );
+                        if ($optScore === $maxScore && $maxScore > 0) {
+                            $benar++;
+                            $codeBenar++;
+                        } else {
+                            $salah++;
+                            $codeSalah++;
                         }
                     } else {
-                        $salah++;
-                        $codeSalah++;
-                        if ($isSkd && $codeVal === 'TKP') {
-                            $visualKey = $ans->jawaban;
-                            $mapping = $ans->options_mapping;
-                            $originalKey = ($mapping && isset($mapping[$visualKey])) ? $mapping[$visualKey] : $visualKey;
-                            $codePoints += (1 + (crc32($ans->question_id . $originalKey) % 4));
+                        // Standard TWK / TIU / SNBT grading
+                        $isCorrect = $ans->isBenar();
+                        if ($isCorrect) {
+                            $benar++;
+                            $codeBenar++;
+                            if ($isSkd) {
+                                $codePoints += 5;
+                            }
+                        } else {
+                            $salah++;
+                            $codeSalah++;
                         }
                     }
                 }

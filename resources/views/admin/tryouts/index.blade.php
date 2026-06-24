@@ -3,8 +3,16 @@
 @section('topbar-actions')
     <a href="{{ route('admin.tryouts.create', ['type' => request('type')]) }}" class="btn btn-primary">+ Buat Paket</a>
 @endsection
-
 @section('content')
+<form method="GET" class="filter-bar" style="display:flex; gap:0.5rem; background:#fff; padding:1rem; border-radius:10px; box-shadow:0 1px 3px rgba(0,0,0,0.05); margin-bottom:1.5rem; align-items:center;">
+    <input type="hidden" name="type" value="{{ request('type') }}">
+    <input type="text" name="search" class="form-control" placeholder="Cari nama paket..." value="{{ request('search') }}" style="flex:1; min-width:200px; max-width:300px;">
+    <button type="submit" class="btn btn-secondary">Cari</button>
+    @if(request('search'))
+        <a href="{{ route('admin.tryouts.index', ['type' => request('type')]) }}" class="btn btn-secondary">Reset</a>
+    @endif
+</form>
+
 <div class="table-card">
     <div class="table-header">
         <h3 style="font-weight: 700;">
@@ -41,7 +49,20 @@
                 </td>
                 <td>
                     <span style="font-weight:600;color:var(--text);">{{ $p->group }}</span>
-                    <div style="font-size:0.75rem;color:var(--text-muted);">{{ $p->category }}</div>
+                    @if($p->jenis_ujian === 'drill')
+                        @if($p->questionCode)
+                            <span class="badge-code" style="font-size:0.65rem; padding: 0.1rem 0.35rem; margin-left: 0.25rem; background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; font-weight: 700; border-radius: 9999px;">{{ $p->questionCode->code }}</span>
+                        @endif
+                        <div style="font-size:0.75rem;color:var(--text-muted);margin-top:0.15rem;">
+                            {{ $p->categoryRelation->name ?? $p->category }}
+                            @if($p->subCategory)
+                                <span style="color:#cbd5e1; margin:0 0.15rem;">&rarr;</span>
+                                <span style="color:#475569; font-weight:500;">{{ $p->subCategory->name }}</span>
+                            @endif
+                        </div>
+                    @else
+                        <div style="font-size:0.75rem;color:var(--text-muted);">{{ $p->category }}</div>
+                    @endif
                 </td>
                 <td style="text-align:center;">
                     <span class="badge" style="background:var(--background-light);color:var(--text);border-color:var(--border);font-weight:600;">

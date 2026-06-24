@@ -250,6 +250,14 @@
             $color = $pct >= 70 ? '#10b981' : ($pct >= 50 ? '#f59e0b' : '#f43f5e');
             $circ  = 2 * M_PI * 54;
             $offset = $circ * (1 - $pct / 100);
+
+            // Calculate real-time rank of this attempt among all users
+            $rank = \App\Models\Result::where('tryout_package_id', $result->tryout_package_id)
+                ->where('skor_total', '>', $result->skor_total)
+                ->count() + 1;
+            $totalParticipants = \App\Models\Result::where('tryout_package_id', $result->tryout_package_id)
+                ->distinct('user_id')
+                ->count('user_id');
         @endphp
 
         <div class="score-ring">
@@ -273,7 +281,7 @@
             @else 💪 Perlu Latihan Lagi
             @endif
         </h2>
-        <p>{{ $result->tryoutPackage->nama }} •
+        <p>{{ $result->tryoutPackage->nama }} &bull; Peringkat <strong style="color: #D97706;">#{{ $rank }}</strong> dari {{ $totalParticipants }} peserta &bull;
             @if($result->examSession->status === 'selesai')
                 Selesai tepat waktu
             @else
