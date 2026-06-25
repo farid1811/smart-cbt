@@ -117,19 +117,7 @@
                 </div>
             </div>
 
-            {{-- Paket Ditugaskan --}}
-            <div class="form-group">
-                <label class="form-label" for="assigned_package_id">Paket Ditugaskan</label>
-                <select id="assigned_package_id" name="assigned_package_id" class="form-control @error('assigned_package_id') is-invalid @enderror">
-                    <option value="">-- Tidak Ada Paket --</option>
-                    @foreach($packages as $package)
-                        <option value="{{ $package->id }}" {{ old('assigned_package_id', $peserta->assigned_package_id) == $package->id ? 'selected' : '' }}>{{ $package->nama }} ({{ $package->jenis_ujian === 'drill' ? 'Drill Soal' : 'Tryout' }} &middot; {{ $package->group }})</option>
-                    @endforeach
-                </select>
-                @error('assigned_package_id')
-                    <p class="form-error">{{ $message }}</p>
-                @enderror
-            </div>
+
 
             {{-- Status --}}
             <div class="form-group">

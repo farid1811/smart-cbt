@@ -207,10 +207,6 @@
                 @if($tryout->categoryRelation)
                     <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.25rem; font-weight:600;">
                         {{ $tryout->categoryRelation->name }}
-                        @if($tryout->subCategory)
-                            <span style="color:#cbd5e1; margin:0 0.15rem;">&rarr;</span>
-                            <span style="color:var(--primary); font-weight:700;">{{ $tryout->subCategory->name }}</span>
-                        @endif
                     </div>
                 @endif
                 

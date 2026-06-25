@@ -13,7 +13,6 @@ class LearningModule extends Model
         'group_id',
         'question_code_id',
         'category_id',
-        'sub_category_id',
         'name',
         'description',
         'pdf_file',
@@ -38,10 +37,5 @@ class LearningModule extends Model
     public function category()
     {
         return $this->belongsTo(Category::class);
-    }
-
-    public function subCategory()
-    {
-        return $this->belongsTo(SubCategory::class);
     }
 }

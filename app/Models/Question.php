@@ -10,7 +10,6 @@ class Question extends Model
         'group_id',
         'question_code_id',
         'category_id',
-        'sub_category_id',
         'tryout_package_id',
         'urutan',
         'soal',
@@ -50,11 +49,6 @@ class Question extends Model
     public function category()
     {
         return $this->belongsTo(Category::class);
-    }
-
-    public function subCategory()
-    {
-        return $this->belongsTo(SubCategory::class);
     }
 
     public function tryoutPackage()

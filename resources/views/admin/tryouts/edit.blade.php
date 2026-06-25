@@ -23,8 +23,7 @@
             <textarea name="deskripsi" class="form-control" rows="3">{{ old('deskripsi', $tryout->deskripsi) }}</textarea>
         </div>
 
-        {{-- Program/Grup, Kategori, Kode, Sub Kategori & Batas Percobaan --}}
-        @if(old('jenis_ujian', $tryout->jenis_ujian) === 'drill')
+        {{-- Program/Grup, Kode Soal, Batas Percobaan, & Kategori --}}
         <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:1rem; margin-bottom:1rem;">
             <div class="form-group" style="margin-bottom:0;">
                 <label>Program / Grup <span style="color:#ef4444;">*</span></label>
@@ -49,48 +48,15 @@
                 @error('attempt_limit')<p class="form-error">{{ $message }}</p>@enderror
             </div>
         </div>
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem; margin-bottom:1rem;">
+        <div style="display:grid; grid-template-columns: 1fr; gap:1rem; margin-bottom:1rem;">
             <div class="form-group" style="margin-bottom:0;">
                 <label>Kategori <span style="color:#ef4444;">*</span></label>
-                <select name="category_id" id="categorySelect" class="form-control @error('category_id') is-invalid @enderror" required onchange="loadSubCategories()">
+                <select name="category_id" id="categorySelect" class="form-control @error('category_id') is-invalid @enderror" required>
                     <option value="">-- Pilih --</option>
                 </select>
                 @error('category_id')<p class="form-error">{{ $message }}</p>@enderror
             </div>
-            <div class="form-group" style="margin-bottom:0;">
-                <label>Sub Kategori (Opsional)</label>
-                <select name="sub_category_id" id="subCategorySelect" class="form-control @error('sub_category_id') is-invalid @enderror">
-                    <option value="">-- Semua Sub Kategori --</option>
-                </select>
-                @error('sub_category_id')<p class="form-error">{{ $message }}</p>@enderror
-            </div>
         </div>
-        @else
-        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:1rem; margin-bottom:1rem;">
-            <div class="form-group" style="margin-bottom:0;">
-                <label>Program / Grup <span style="color:#ef4444;">*</span></label>
-                <select name="group_id" id="groupSelect" class="form-control @error('group_id') is-invalid @enderror" required onchange="updateCategories()">
-                    <option value="">-- Pilih --</option>
-                    @foreach($groups as $g)
-                        <option value="{{ $g->id }}" data-name="{{ $g->name }}" {{ old('group_id', $tryout->group_id) == $g->id ? 'selected' : '' }}>{{ $g->name }}</option>
-                    @endforeach
-                </select>
-                @error('group_id')<p class="form-error">{{ $message }}</p>@enderror
-            </div>
-            <div class="form-group" style="margin-bottom:0;">
-                <label>Kategori <span style="color:#ef4444;">*</span></label>
-                <select name="category" id="categorySelect" class="form-control @error('category') is-invalid @enderror" required>
-                    <option value="">-- Pilih --</option>
-                </select>
-                @error('category')<p class="form-error">{{ $message }}</p>@enderror
-            </div>
-            <div class="form-group" style="margin-bottom:0;">
-                <label>Batas Percobaan <span style="color:#ef4444;">*</span></label>
-                <input type="number" name="attempt_limit" class="form-control @error('attempt_limit') is-invalid @enderror" value="{{ old('attempt_limit', $tryout->attempt_limit) }}" min="1" required>
-                @error('attempt_limit')<p class="form-error">{{ $message }}</p>@enderror
-            </div>
-        </div>
-        @endif
 
         <div class="form-row">
             <div class="form-group">
@@ -192,45 +158,17 @@ function toggleSebFields() {
     }
 }
 
-const categoriesByGroupName = {
-    SKD: ['CPNS', 'Kedinasan'],
-    SNBT: ['SNBT']
-};
-
-function updateCategories() {
-    const groupSelect = document.getElementById('groupSelect');
-    if (!groupSelect) return;
-    const selectedOption = groupSelect.options[groupSelect.selectedIndex];
-    const groupName = selectedOption ? selectedOption.getAttribute('data-name') : '';
-    const categorySelect = document.getElementById('categorySelect');
-    const oldCategory = "{{ old('category', $tryout->category) }}";
-    
-    categorySelect.innerHTML = '<option value="">-- Pilih --</option>';
-    
-    if (groupName && categoriesByGroupName[groupName]) {
-        categoriesByGroupName[groupName].forEach(cat => {
-            const opt = document.createElement('option');
-            opt.value = cat;
-            opt.textContent = cat;
-            if (oldCategory === cat) opt.selected = true;
-            categorySelect.appendChild(opt);
-        });
-    }
-}
-
 async function loadCodes(selectedId = null) {
     const groupId = document.getElementById('groupSelect').value;
     const codeSelect = document.getElementById('codeSelect');
     const categorySelect = document.getElementById('categorySelect');
-    const subCategorySelect = document.getElementById('subCategorySelect');
     
     codeSelect.innerHTML = '<option value="">-- Pilih --</option>';
     categorySelect.innerHTML = '<option value="">-- Pilih --</option>';
-    subCategorySelect.innerHTML = '<option value="">-- Semua Sub Kategori --</option>';
     
     if (!groupId) return;
     
-    const res = await fetch(`/admin/api/codes/${groupId}`);
+    const res = await fetch(`${window.CbtConfig.baseUrl}/admin/api/codes/${groupId}`);
     const codes = await res.json();
     codes.forEach(c => {
         const opt = document.createElement('option');
@@ -244,14 +182,12 @@ async function loadCodes(selectedId = null) {
 async function loadCategories(selectedId = null) {
     const codeId = document.getElementById('codeSelect').value;
     const categorySelect = document.getElementById('categorySelect');
-    const subCategorySelect = document.getElementById('subCategorySelect');
     
     categorySelect.innerHTML = '<option value="">-- Pilih --</option>';
-    subCategorySelect.innerHTML = '<option value="">-- Semua Sub Kategori --</option>';
     
     if (!codeId) return;
     
-    const res = await fetch(`/admin/api/categories/${codeId}`);
+    const res = await fetch(`${window.CbtConfig.baseUrl}/admin/api/categories/${codeId}`);
     const categories = await res.json();
     categories.forEach(c => {
         const opt = document.createElement('option');
@@ -262,46 +198,19 @@ async function loadCategories(selectedId = null) {
     });
 }
 
-async function loadSubCategories(selectedId = null) {
-    const categoryId = document.getElementById('categorySelect').value;
-    const subCategorySelect = document.getElementById('subCategorySelect');
-    
-    subCategorySelect.innerHTML = '<option value="">-- Semua Sub Kategori --</option>';
-    
-    if (!categoryId) return;
-    
-    const res = await fetch(`/admin/api/subcategories/${categoryId}`);
-    const subCategories = await res.json();
-    subCategories.forEach(s => {
-        const opt = document.createElement('option');
-        opt.value = s.id;
-        opt.textContent = s.name;
-        if (selectedId && s.id == selectedId) opt.selected = true;
-        subCategorySelect.appendChild(opt);
-    });
-}
-
 document.addEventListener('DOMContentLoaded', async function() {
     toggleSebFields();
     
-    @if(old('jenis_ujian', $tryout->jenis_ujian) === 'drill')
-        const groupId = "{{ old('group_id', $tryout->group_id) }}";
-        const selectedCodeId = "{{ old('question_code_id', $tryout->question_code_id) }}";
-        const selectedCategoryId = "{{ old('category_id', $tryout->category_id) }}";
-        const selectedSubCategoryId = "{{ old('sub_category_id', $tryout->sub_category_id) }}";
-        
-        if (groupId) {
-            await loadCodes(selectedCodeId);
-        }
-        if (selectedCodeId) {
-            await loadCategories(selectedCategoryId);
-        }
-        if (selectedCategoryId) {
-            await loadSubCategories(selectedSubCategoryId);
-        }
-    @else
-        updateCategories();
-    @endif
+    const groupId = "{{ old('group_id', $tryout->group_id) }}";
+    const selectedCodeId = "{{ old('question_code_id', $tryout->question_code_id) }}";
+    const selectedCategoryId = "{{ old('category_id', $tryout->category_id) }}";
+    
+    if (groupId) {
+        await loadCodes(selectedCodeId);
+    }
+    if (selectedCodeId) {
+        await loadCategories(selectedCategoryId);
+    }
 });
 </script>
 @endpush

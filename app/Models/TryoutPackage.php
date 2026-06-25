@@ -16,7 +16,6 @@ class TryoutPackage extends Model
         'category',
         'category_id',
         'question_code_id',
-        'sub_category_id',
         'attempt_limit',
         'durasi_menit',
         'is_active',
@@ -51,11 +50,6 @@ class TryoutPackage extends Model
     public function categoryRelation()
     {
         return $this->belongsTo(Category::class, 'category_id');
-    }
-
-    public function subCategory()
-    {
-        return $this->belongsTo(SubCategory::class, 'sub_category_id');
     }
 
     public function questions()

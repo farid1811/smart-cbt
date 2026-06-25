@@ -36,10 +36,8 @@ class TryoutPackageController extends Controller
             'deskripsi'            => 'nullable|string',
             'jenis_ujian'          => 'required|in:tryout,drill',
             'group_id'             => 'required|exists:groups,id',
-            'category'             => 'required_if:jenis_ujian,tryout|nullable|string|max:50',
-            'question_code_id'     => 'required_if:jenis_ujian,drill|nullable|exists:question_codes,id',
-            'category_id'          => 'required_if:jenis_ujian,drill|nullable|exists:categories,id',
-            'sub_category_id'      => 'nullable|exists:sub_categories,id',
+            'question_code_id'     => 'required|exists:question_codes,id',
+            'category_id'          => 'required|exists:categories,id',
             'attempt_limit'        => 'required|integer|min:1',
             'durasi_menit'         => 'required|integer|min:10|max:300',
             'is_active'            => 'boolean',
@@ -57,14 +55,8 @@ class TryoutPackageController extends Controller
         $group = \App\Models\Group::findOrFail($validated['group_id']);
         $validated['group'] = $group->name;
 
-        if ($validated['jenis_ujian'] === 'drill') {
-            $categoryModel = \App\Models\Category::findOrFail($validated['category_id']);
-            $validated['category'] = $categoryModel->name;
-        } else {
-            $validated['question_code_id'] = null;
-            $validated['category_id'] = null;
-            $validated['sub_category_id'] = null;
-        }
+        $categoryModel = \App\Models\Category::findOrFail($validated['category_id']);
+        $validated['category'] = $categoryModel->name;
 
         $validated['is_active'] = $request->has('is_active');
         $validated['seb_browser_lockdown'] = $request->has('seb_browser_lockdown');
@@ -95,10 +87,8 @@ class TryoutPackageController extends Controller
             'deskripsi'            => 'nullable|string',
             'jenis_ujian'          => 'required|in:tryout,drill',
             'group_id'             => 'required|exists:groups,id',
-            'category'             => 'required_if:jenis_ujian,tryout|nullable|string|max:50',
-            'question_code_id'     => 'required_if:jenis_ujian,drill|nullable|exists:question_codes,id',
-            'category_id'          => 'required_if:jenis_ujian,drill|nullable|exists:categories,id',
-            'sub_category_id'      => 'nullable|exists:sub_categories,id',
+            'question_code_id'     => 'required|exists:question_codes,id',
+            'category_id'          => 'required|exists:categories,id',
             'attempt_limit'        => 'required|integer|min:1',
             'durasi_menit'         => 'required|integer|min:10|max:300',
             'is_active'            => 'boolean',
@@ -116,14 +106,8 @@ class TryoutPackageController extends Controller
         $group = \App\Models\Group::findOrFail($validated['group_id']);
         $validated['group'] = $group->name;
 
-        if ($validated['jenis_ujian'] === 'drill') {
-            $categoryModel = \App\Models\Category::findOrFail($validated['category_id']);
-            $validated['category'] = $categoryModel->name;
-        } else {
-            $validated['question_code_id'] = null;
-            $validated['category_id'] = null;
-            $validated['sub_category_id'] = null;
-        }
+        $categoryModel = \App\Models\Category::findOrFail($validated['category_id']);
+        $validated['category'] = $categoryModel->name;
 
         $validated['is_active'] = $request->has('is_active');
         $validated['seb_browser_lockdown'] = $request->has('seb_browser_lockdown');

@@ -30,43 +30,44 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     // Modul Pembelajaran
     Route::resource('modules', Admin\ModuleController::class)->except(['show']);
 
-    // Kategori & Hierarki
+    // Kategori & Hierarki (tanpa SubKategori)
     Route::get('api/groups', [Admin\CategoryController::class, 'getGroups'])->name('api.groups');
     Route::get('api/codes/{groupId}', [Admin\CategoryController::class, 'getCodesByGroup'])->name('api.codesByGroup');
     Route::get('api/categories/{codeId}', [Admin\CategoryController::class, 'getCategoriesByCode'])->name('api.categoriesByCode');
-    Route::get('api/subcategories/{categoryId}', [Admin\CategoryController::class, 'getSubCategoriesByCategory'])->name('api.subcategoriesByCategory');
 
     Route::post('categories/code', [Admin\CategoryController::class, 'storeCode'])->name('categories.storeCode');
     Route::put('categories/code/{code}', [Admin\CategoryController::class, 'updateCode'])->name('categories.updateCode');
     Route::delete('categories/code/{code}', [Admin\CategoryController::class, 'destroyCode'])->name('categories.destroyCode');
 
-    Route::post('categories/subcategory', [Admin\CategoryController::class, 'storeSubCategory'])->name('categories.storeSubCategory');
-    Route::put('categories/subcategory/{subcategory}', [Admin\CategoryController::class, 'updateSubCategory'])->name('categories.updateSubCategory');
-    Route::delete('categories/subcategory/{subcategory}', [Admin\CategoryController::class, 'destroySubCategory'])->name('categories.destroySubCategory');
-
     Route::resource('categories', Admin\CategoryController::class)->except(['show']);
 
-    // Bank Soal / Impor Soal
+    // Bank Soal
     Route::post('questions/bulk-delete', [Admin\QuestionController::class, 'bulkDelete'])->name('questions.bulkDelete');
     Route::post('questions/delete-by-category', [Admin\QuestionController::class, 'deleteByCategory'])->name('questions.deleteByCategory');
-    Route::post('questions/delete-by-subcategory', [Admin\QuestionController::class, 'deleteBySubCategory'])->name('questions.deleteBySubCategory');
-
-    Route::get('questions/import', [Admin\QuestionController::class, 'importForm'])->name('questions.importForm');
-    Route::post('questions/import-preview', [Admin\QuestionController::class, 'importWordPreview'])->name('questions.importPreview');
-    Route::post('questions/import-pdf-preview', [Admin\QuestionController::class, 'importPdfPreview'])->name('questions.importPdfPreview');
-    Route::post('questions/import-confirm', [Admin\QuestionController::class, 'importWordConfirm'])->name('questions.importConfirm');
-    Route::post('questions/import', [Admin\QuestionController::class, 'importProcess'])->name('questions.import');
     Route::resource('questions', Admin\QuestionController::class)->except(['show']);
 
-    // Paket Tryout
+    // Paket Tryout & Import Soal per Paket
     Route::resource('tryouts', Admin\TryoutPackageController::class);
     Route::get('tryouts/{tryout}/seb-config',       [Admin\TryoutPackageController::class, 'downloadSebConfig'])->name('tryouts.sebConfig');
     Route::post('tryouts/{tryout}/add-question',    [Admin\TryoutPackageController::class, 'addQuestion'])->name('tryouts.addQuestion');
     Route::post('tryouts/{tryout}/remove-question', [Admin\TryoutPackageController::class, 'removeQuestion'])->name('tryouts.removeQuestion');
 
+    // Import Soal — terintegrasi ke dalam Detail Paket
+    Route::get('tryouts/{tryout}/import',             [Admin\ImportController::class, 'showForm'])->name('tryouts.import.form');
+    Route::post('tryouts/{tryout}/import-word',       [Admin\ImportController::class, 'wordPreview'])->name('tryouts.import.word');
+    Route::post('tryouts/{tryout}/import-pdf',        [Admin\ImportController::class, 'pdfPreview'])->name('tryouts.import.pdf');
+    Route::post('tryouts/{tryout}/import-confirm',    [Admin\ImportController::class, 'confirm'])->name('tryouts.import.confirm');
+
     // Rekap Nilai
     Route::get('/rekap',        [Admin\RekapController::class, 'index'])->name('rekap.index');
     Route::get('/rekap/export', [Admin\RekapController::class, 'exportCsv'])->name('rekap.export');
+
+    // Pengaturan — CMS Homepage
+    Route::get('/pengaturan/homepage',  [Admin\HomepageController::class, 'index'])->name('homepage.index');
+    Route::put('/pengaturan/homepage',  [Admin\HomepageController::class, 'update'])->name('homepage.update');
+
+    // Pengaturan — Alumni CRUD
+    Route::resource('alumni', Admin\AlumniController::class)->except(['show']);
 });
 
 // ─── Area Peserta ────────────────────────────────────────────────────────────

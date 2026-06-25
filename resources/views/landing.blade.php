@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Lembaga Bimbingan Belajar Premium untuk Persiapan SNBT, Sekolah Kedinasan, dan Seleksi CPNS. Kelas Tatap Muka & Tryout Online Terbaik.">
-    <title>Bimbel Plano — Lembaga Bimbingan Belajar Premium</title>
+    <meta name="description" content="{{ $settings->meta_description }}">
+    <title>{{ $settings->meta_title }}</title>
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -98,10 +98,10 @@
                 <!-- Brand Logo -->
                 <div class="flex-shrink-0 transition-transform duration-300 hover:scale-102">
                     <a href="{{ route('landing') }}" class="flex items-center gap-3">
-                        <img src="{{ asset('images/logo-plano.jpg') }}" alt="Bimbel Plano Logo" class="h-12 w-auto object-contain rounded-lg shadow-sm">
+                        <img src="{{ asset('images/logo-plano.jpg') }}" alt="{{ $settings->nama_lembaga }} Logo" class="h-12 w-auto object-contain rounded-lg shadow-sm">
                         <div class="flex flex-col">
-                            <span class="font-display font-extrabold text-xl tracking-tight text-primary leading-tight">BIMBEL PLANO</span>
-                            <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Premium Education</span>
+                            <span class="font-display font-extrabold text-xl tracking-tight text-primary leading-tight">{{ strtoupper($settings->nama_lembaga) }}</span>
+                            <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{{ $settings->tagline }}</span>
                         </div>
                     </a>
                 </div>
@@ -187,40 +187,43 @@
                 <!-- Text Area -->
                 <div class="lg:col-span-7 text-center lg:text-left space-y-6 sm:space-y-8 z-10">
                     <span class="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-semibold bg-blue-50 border border-blue-100/50 text-primary uppercase tracking-wider">
-                        🎓 Lembaga Bimbingan Belajar Premium
+                        {{ $settings->hero_badge }}
                     </span>
                     <h1 class="text-3xl sm:text-4xl lg:text-5xl font-display font-extrabold text-slate-900 leading-tight tracking-tight">
-                        Platform Tryout dan Bimbingan Belajar Terbaik untuk <span class="text-primary">SKD, CPNS, Kedinasan,</span> dan <span class="text-amber-500">SNBT</span>
+                        {!! nl2br(e($settings->hero_title)) !!}
                     </h1>
                     <p class="text-base sm:text-lg text-slate-600 leading-relaxed max-w-2xl mx-auto lg:mx-0">
-                        Bimbingan belajar untuk program SNBT, Sekolah Kedinasan, dan CPNS. Belajar tatap muka, latihan soal, serta tryout untuk membantu peserta mempersiapkan diri lebih baik.
+                        {{ $settings->hero_subtitle }}
                     </p>
                     
                     <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
                         @auth
-                            @if(auth()->user()->isPeserta())
+                            @if(auth()->user()->isAdmin())
+                                <a href="{{ route('admin.dashboard') }}" class="w-full sm:w-auto text-center bg-primary hover:bg-primary-dark text-white font-bold px-8 py-4 rounded-xl shadow-lg shadow-blue-500/10 hover:shadow-xl transition-all duration-200">
+                                    {{ $settings->hero_cta_primary }}
+                                </a>
+                                <a href="{{ route('admin.dashboard') }}" class="w-full sm:w-auto text-center bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 font-semibold px-6 py-4 rounded-xl transition-all duration-200">
+                                    Dashboard Admin
+                                </a>
+                            @elseif(auth()->user()->isPeserta())
                                 <a href="{{ route('peserta.dashboard') }}" class="w-full sm:w-auto text-center bg-primary hover:bg-primary-dark text-white font-bold px-8 py-4 rounded-xl shadow-lg shadow-blue-500/10 hover:shadow-xl transition-all duration-200">
-                                    Mulai Tryout
+                                    {{ $settings->hero_cta_primary }}
                                 </a>
                                 <a href="{{ route('peserta.dashboard') }}" class="w-full sm:w-auto text-center bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 font-semibold px-6 py-4 rounded-xl transition-all duration-200">
                                     Dashboard Ujian
                                 </a>
-                            @else
-                                <a href="{{ route('admin.dashboard') }}" class="w-full sm:w-auto text-center bg-primary hover:bg-primary-dark text-white font-bold px-8 py-4 rounded-xl shadow-lg shadow-blue-500/10 hover:shadow-xl transition-all duration-200">
-                                    Dashboard Admin
-                                </a>
                             @endif
                         @else
                             <a href="{{ route('login') }}" class="w-full sm:w-auto text-center bg-primary hover:bg-primary-dark text-white font-bold px-8 py-4 rounded-xl shadow-lg shadow-blue-500/10 hover:shadow-xl transition-all duration-200">
-                                Mulai Tryout
+                                {{ $settings->hero_cta_primary }}
                             </a>
                             <a href="{{ route('login') }}" class="w-full sm:w-auto text-center bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 font-semibold px-6 py-4 rounded-xl transition-all duration-200">
                                 Login Peserta
                             </a>
                         @endauth
-                        <a href="https://wa.me/6285233687867?text=Halo%20Admin%20Bimbel%20Plano,%20saya%20tertarik%20dengan%20program%20bimbingan..." target="_blank" class="w-full sm:w-auto text-center bg-emerald-50 text-emerald-700 border border-emerald-100 font-semibold px-6 py-4 rounded-xl hover:bg-emerald-100 transition-all duration-200 flex items-center justify-center gap-2 shadow-sm">
+                        <a href="https://wa.me/{{ $settings->whatsapp_number }}?text=Halo%20Admin%20{{ urlencode($settings->nama_lembaga) }},%20saya%20tertarik%20dengan%20program%20bimbingan..." target="_blank" class="w-full sm:w-auto text-center bg-emerald-50 text-emerald-700 border border-emerald-100 font-semibold px-6 py-4 rounded-xl hover:bg-emerald-100 transition-all duration-200 flex items-center justify-center gap-2 shadow-sm">
                             <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12.031 6.172c-2.02 0-3.659 1.64-3.659 3.66 0 .546.12 1.088.351 1.581l-.043-.092L8 14.5l3.29-.861.12.062a3.61 3.61 0 0 0 1.63.393c2.019 0 3.66-1.639 3.66-3.659s-1.634-3.663-3.659-3.663zm3.767 5.139c-.1.299-.5.599-.8.699-.3.1-.6.2-1.8-.3-1.4-.6-2.3-2-2.4-2.1-.1-.1-.8-1.1-.8-2.1s.5-1.5.7-1.7c.2-.2.4-.3.6-.3.1 0 .2 0 .3.1l.4.9c.1.2.1.4 0 .5l-.2.4c-.1.1-.2.3-.1.4.1.2.5.9 1.1 1.5.7.7 1.4 1 1.7 1.1.3.1.5 0 .6-.2.1-.2.6-.7.8-1 .2-.3.4-.2.6-.1l1.1.5c.2.1.4.3.4.4.1.3 0 1.1-.3 1.4zM12 2C6.477 2 2 6.477 2 12c0 1.891.524 3.66 1.434 5.178L2 22l4.981-1.393A9.954 9.954 0 0 0 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2z"/></svg>
-                            Hubungi Admin
+                            {{ $settings->hero_cta_whatsapp }}
                         </a>
                     </div>
                 </div>
@@ -237,7 +240,7 @@
                                 </div>
                                 <div class="flex flex-col">
                                     <span class="text-xs text-slate-400 font-bold uppercase tracking-wider">Tingkat Kelulusan</span>
-                                    <span class="font-display font-extrabold text-slate-800 text-sm">Alumni Lolos 98.6%</span>
+                                    <span class="font-display font-extrabold text-slate-800 text-sm">Alumni Lolos {{ number_format($settings->hero_passing_rate, 1) }}%</span>
                                 </div>
                             </div>
                         </div>
@@ -252,9 +255,9 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center max-w-3xl mx-auto mb-16 space-y-3">
                 <span class="text-sm font-bold text-primary uppercase tracking-wider">Program Unggulan</span>
-                <h2 class="text-3xl sm:text-4xl font-display font-extrabold text-slate-900">Program Bimbingan Belajar Terbaik</h2>
+                <h2 class="text-3xl sm:text-4xl font-display font-extrabold text-slate-900">{{ $settings->program_section_title }}</h2>
                 <p class="text-slate-500 text-sm sm:text-base leading-relaxed">
-                    Pilihan program belajar terbaik untuk membantu Anda meraih impian akademis dan karier masa depan.
+                    {{ $settings->program_section_subtitle }}
                 </p>
             </div>
             
@@ -318,53 +321,32 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center max-w-3xl mx-auto mb-16 space-y-3">
                 <span class="text-sm font-bold text-primary uppercase tracking-wider">Keberhasilan Alumni</span>
-                <h2 class="text-3xl sm:text-4xl font-display font-extrabold text-slate-900">Alumni yang Berhasil Meraih Impian</h2>
+                <h2 class="text-3xl sm:text-4xl font-display font-extrabold text-slate-900">{{ $settings->alumni_section_title }}</h2>
                 <p class="text-slate-500 text-sm sm:text-base leading-relaxed">
-                    Beberapa alumni peserta Bimbel Plano yang telah berhasil lulus di PTN dan instansi tujuan mereka.
+                    {{ $settings->alumni_section_subtitle }}
                 </p>
             </div>
             
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                <!-- Alumni 1 -->
-                <div class="bg-slate-50/50 border border-slate-200/50 rounded-2xl overflow-hidden premium-glow p-4 flex flex-col gap-4 text-center">
-                    <img src="{{ asset('images/alumni-budi.webp') }}" alt="Alumni Budi Santoso" class="w-full aspect-square object-cover rounded-xl shadow-sm" loading="lazy">
-                    <div class="space-y-1">
-                        <h4 class="font-display font-bold text-slate-800 text-base">Budi Santoso</h4>
-                        <span class="inline-flex px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-primary uppercase tracking-wider">PKN STAN</span>
-                        <p class="text-xs text-slate-400 font-semibold pt-1">Lolos Angkatan 2024</p>
-                    </div>
-                </div>
-
-                <!-- Alumni 2 -->
-                <div class="bg-slate-50/50 border border-slate-200/50 rounded-2xl overflow-hidden premium-glow p-4 flex flex-col gap-4 text-center">
-                    <img src="{{ asset('images/alumni-siti.webp') }}" alt="Alumni Siti Aminah" class="w-full aspect-square object-cover rounded-xl shadow-sm" loading="lazy">
-                    <div class="space-y-1">
-                        <h4 class="font-display font-bold text-slate-800 text-base">Siti Aminah</h4>
-                        <span class="inline-flex px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-primary uppercase tracking-wider">IPDN</span>
-                        <p class="text-xs text-slate-400 font-semibold pt-1">Lolos Angkatan 2025</p>
-                    </div>
-                </div>
-
-                <!-- Alumni 3 -->
-                <div class="bg-slate-50/50 border border-slate-200/50 rounded-2xl overflow-hidden premium-glow p-4 flex flex-col gap-4 text-center">
-                    <img src="{{ asset('images/alumni-riki.webp') }}" alt="Alumni Riki Wijaya" class="w-full aspect-square object-cover rounded-xl shadow-sm" loading="lazy">
-                    <div class="space-y-1">
-                        <h4 class="font-display font-bold text-slate-800 text-base">Riki Wijaya</h4>
-                        <span class="inline-flex px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700 uppercase tracking-wider">Universitas Indonesia</span>
-                        <p class="text-xs text-slate-400 font-semibold pt-1">Lolos Angkatan 2024</p>
-                    </div>
-                </div>
-
-                <!-- Alumni 4 -->
-                <div class="bg-slate-50/50 border border-slate-200/50 rounded-2xl overflow-hidden premium-glow p-4 flex flex-col gap-4 text-center">
-                    <img src="{{ asset('images/alumni-ani.webp') }}" alt="Alumni Ani Lestari" class="w-full aspect-square object-cover rounded-xl shadow-sm" loading="lazy">
-                    <div class="space-y-1">
-                        <h4 class="font-display font-bold text-slate-800 text-base">Ani Lestari</h4>
-                        <span class="inline-flex px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700 uppercase tracking-wider">Universitas Syiah Kuala</span>
-                        <p class="text-xs text-slate-400 font-semibold pt-1">Lolos Angkatan 2025</p>
-                    </div>
-                </div>
+            @if($alumniList->isEmpty())
+            {{-- Empty state: tampilkan pesan jika belum ada alumni di database --}}
+            <div class="text-center py-12 text-slate-400">
+                <svg class="w-12 h-12 mx-auto mb-3 opacity-40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <p class="text-sm font-medium">Data alumni belum tersedia.</p>
             </div>
+            @else
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                @foreach($alumniList as $alum)
+                <div class="bg-slate-50/50 border border-slate-200/50 rounded-2xl overflow-hidden premium-glow p-4 flex flex-col gap-4 text-center">
+                    <img src="{{ $alum->foto_url }}" alt="Alumni {{ $alum->nama }}" class="w-full aspect-square object-cover rounded-xl shadow-sm" loading="lazy">
+                    <div class="space-y-1">
+                        <h4 class="font-display font-bold text-slate-800 text-base">{{ $alum->nama }}</h4>
+                        <span class="inline-flex px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-primary uppercase tracking-wider">{{ $alum->instansi }}</span>
+                        <p class="text-xs text-slate-400 font-semibold pt-1">Lolos {{ $alum->tahun_lulus }}</p>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+            @endif
         </div>
     </section>
 
@@ -373,9 +355,9 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center max-w-3xl mx-auto mb-16 space-y-3">
                 <span class="text-sm font-bold text-primary uppercase tracking-wider">Testimoni Sukses</span>
-                <h2 class="text-3xl sm:text-4xl font-display font-extrabold text-slate-900">Cerita Sukses Alumni</h2>
+                <h2 class="text-3xl sm:text-4xl font-display font-extrabold text-slate-900">{{ $settings->testimoni_section_title }}</h2>
                 <p class="text-slate-500 text-sm sm:text-base leading-relaxed">
-                    Ungkapan langsung dari para peserta yang berhasil lolos ujian impian setelah belajar bersama Bimbel Plano.
+                    {{ $settings->testimoni_section_subtitle }}
                 </p>
             </div>
             
@@ -444,9 +426,9 @@
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-16 space-y-3">
                 <span class="text-sm font-bold text-primary uppercase tracking-wider">FAQ</span>
-                <h2 class="text-3xl sm:text-4xl font-display font-extrabold text-slate-900">Pertanyaan Umum</h2>
+                <h2 class="text-3xl sm:text-4xl font-display font-extrabold text-slate-900">{{ $settings->faq_section_title }}</h2>
                 <p class="text-slate-500 text-sm sm:text-base leading-relaxed">
-                    Berikut adalah jawaban atas beberapa pertanyaan umum yang sering ditanyakan mengenai Bimbel Plano.
+                    {{ $settings->faq_section_subtitle }}
                 </p>
             </div>
             
@@ -526,31 +508,31 @@
                 <!-- Brand details -->
                 <div class="lg:col-span-4 space-y-4">
                     <div class="flex items-center gap-3">
-                        <img src="{{ asset('images/logo-plano.jpg') }}" alt="Bimbel Plano Logo" class="h-12 w-auto object-contain rounded-lg">
+                        <img src="{{ asset('images/logo-plano.jpg') }}" alt="{{ $settings->nama_lembaga }} Logo" class="h-12 w-auto object-contain rounded-lg">
                         <div class="flex flex-col">
-                            <span class="font-display font-extrabold text-xl tracking-tight text-white leading-tight">BIMBEL PLANO</span>
-                            <span class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Premium Education</span>
+                            <span class="font-display font-extrabold text-xl tracking-tight text-white leading-tight">{{ strtoupper($settings->nama_lembaga) }}</span>
+                            <span class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">{{ $settings->tagline }}</span>
                         </div>
                     </div>
                     <p class="text-sm text-slate-400 leading-relaxed">
-                        Lembaga bimbingan belajar profesional yang membantu siswa lolos SNBT, CPNS, dan Sekolah Kedinasan melalui pembelajaran tatap muka, latihan soal, dan tryout online berkualitas.
+                        {{ $settings->footer_description }}
                     </p>
                     <div class="pt-2 text-sm text-slate-400 space-y-2.5">
                         <div class="flex items-start gap-3">
                             <svg class="w-5 h-5 text-primary-light flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                            <span>Jana Residence No.2, Lr. Petua Usman, TM Bahrum, Kota Langsa, Provinsi Aceh</span>
+                            <span>{{ $settings->alamat }}</span>
                         </div>
                         <div class="flex items-center gap-3">
                             <svg class="w-5 h-5 text-primary-light flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
-                            <span>085233687867</span>
+                            <span>{{ $settings->whatsapp_number }}</span>
                         </div>
                         <div class="flex items-center gap-3">
                             <svg class="w-5 h-5 text-primary-light flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.206"/></svg>
-                            <a href="mailto:bimbelplano@gmail.com" class="hover:text-white transition-colors">bimbelplano@gmail.com</a>
+                            <a href="mailto:{{ $settings->email }}" class="hover:text-white transition-colors">{{ $settings->email }}</a>
                         </div>
                         <div class="flex items-center gap-3">
                             <svg class="w-5 h-5 text-primary-light flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
-                            <a href="https://instagram.com/bimbelplano_" target="_blank" class="hover:text-white transition-colors">@bimbelplano_</a>
+                            <a href="https://instagram.com/{{ ltrim($settings->instagram, '@') }}" target="_blank" class="hover:text-white transition-colors">{{ $settings->instagram }}</a>
                         </div>
                     </div>
                 </div>
@@ -580,17 +562,17 @@
             </div>
             
             <div class="border-t border-slate-800 pt-8 mt-8 text-center text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <span>&copy; 2026 Bimbel Plano. Hak Cipta Dilindungi Undang-Undang.</span>
+                <span>&copy; {{ date('Y') }} {{ $settings->nama_lembaga }}. Hak Cipta Dilindungi Undang-Undang.</span>
                 <span class="flex gap-4">
-                    <a href="https://instagram.com/bimbelplano_" target="_blank" class="hover:text-slate-400 transition-colors">Instagram</a>
-                    <a href="https://wa.me/6285233687867" target="_blank" class="hover:text-slate-400 transition-colors">WhatsApp</a>
+                    <a href="https://instagram.com/{{ ltrim($settings->instagram, '@') }}" target="_blank" class="hover:text-slate-400 transition-colors">Instagram</a>
+                    <a href="https://wa.me/{{ $settings->whatsapp_number }}" target="_blank" class="hover:text-slate-400 transition-colors">WhatsApp</a>
                 </span>
             </div>
         </div>
     </footer>
 
     <!-- Floating WhatsApp Button -->
-    <a href="https://wa.me/6285233687867?text=Halo%20Admin%20Bimbel%20Plano,%20saya%20ingin%20bertanya%20tentang%20program%20bimbingan..." target="_blank" class="fixed bottom-6 right-6 z-50 bg-emerald-500 hover:bg-emerald-600 text-white p-4 rounded-full shadow-2xl hover:scale-110 active:scale-95 transition-all duration-200 flex items-center justify-center border border-emerald-400/20" title="Hubungi Kami via WhatsApp">
+    <a href="https://wa.me/{{ $settings->whatsapp_number }}?text=Halo%20Admin%20{{ urlencode($settings->nama_lembaga) }},%20saya%20ingin%20bertanya%20tentang%20program%20bimbingan..." target="_blank" class="fixed bottom-6 right-6 z-50 bg-emerald-500 hover:bg-emerald-600 text-white p-4 rounded-full shadow-2xl hover:scale-110 active:scale-95 transition-all duration-200 flex items-center justify-center border border-emerald-400/20" title="Hubungi Kami via WhatsApp">
         <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.503-5.728-1.46L0 24zm6.59-4.846c1.6.95 3.1 1.45 4.8 1.45 5.5 0 10-4.5 10-10s-4.5-10-10-10-10 4.5-10 10c0 1.9.5 3.7 1.5 5.3l-.99 3.6 3.69-.95zm12.38-5.32c-.3-.15-1.79-.88-2.07-.98-.27-.1-.47-.15-.67.15-.2.3-.77.98-.95 1.18-.18.2-.35.23-.65.08-.3-.15-1.28-.47-2.45-1.51-.91-.81-1.53-1.82-1.71-2.12-.18-.3-.02-.47.13-.62.14-.14.3-.35.45-.53.15-.18.2-.3.3-.5.1-.2.05-.38-.02-.53-.07-.15-.67-1.62-.92-2.22-.24-.57-.49-.49-.67-.5-.18-.01-.38-.01-.58-.01-.2 0-.52.07-.79.37-.27.3-1.03 1-1.03 2.44 0 1.44 1.05 2.84 1.2 3.04.15.2 2.07 3.16 5.01 4.43.7.3 1.25.48 1.68.62.7.22 1.34.19 1.84.11.56-.08 1.79-.73 2.04-1.44.25-.7.25-1.3.17-1.44-.08-.13-.3-.23-.6-.38z"/></svg>
     </a>
 

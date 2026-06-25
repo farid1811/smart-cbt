@@ -7,7 +7,6 @@ use App\Models\LearningModule;
 use App\Models\Group;
 use App\Models\QuestionCode;
 use App\Models\Category;
-use App\Models\SubCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -15,7 +14,7 @@ class ModuleController extends Controller
 {
     public function index(Request $request)
     {
-        $query = LearningModule::with(['group', 'questionCode', 'category', 'subCategory']);
+        $query = LearningModule::with(['group', 'questionCode', 'category']);
 
         if ($request->filled('group_id')) {
             $query->where('group_id', $request->group_id);
@@ -25,9 +24,6 @@ class ModuleController extends Controller
         }
         if ($request->filled('category_id')) {
             $query->where('category_id', $request->category_id);
-        }
-        if ($request->filled('sub_category_id')) {
-            $query->where('sub_category_id', $request->sub_category_id);
         }
         if ($request->filled('search')) {
             $query->where('name', 'like', '%' . $request->search . '%');
@@ -51,7 +47,6 @@ class ModuleController extends Controller
             'group_id'          => 'required|exists:groups,id',
             'question_code_id'  => 'required|exists:question_codes,id',
             'category_id'       => 'required|exists:categories,id',
-            'sub_category_id'   => 'required|exists:sub_categories,id',
             'name'              => 'required|string|max:255',
             'description'       => 'nullable|string',
             'pdf_file'          => 'nullable|file|mimes:pdf|max:10240',
@@ -79,9 +74,8 @@ class ModuleController extends Controller
         $groups = Group::all();
         $codes = QuestionCode::where('group_id', $module->group_id)->get();
         $categories = Category::where('question_code_id', $module->question_code_id)->get();
-        $subCategories = SubCategory::where('category_id', $module->category_id)->get();
         
-        return view('admin.modules.edit', compact('module', 'groups', 'codes', 'categories', 'subCategories'));
+        return view('admin.modules.edit', compact('module', 'groups', 'codes', 'categories'));
     }
 
     public function update(Request $request, LearningModule $module)
@@ -90,7 +84,6 @@ class ModuleController extends Controller
             'group_id'          => 'required|exists:groups,id',
             'question_code_id'  => 'required|exists:question_codes,id',
             'category_id'       => 'required|exists:categories,id',
-            'sub_category_id'   => 'required|exists:sub_categories,id',
             'name'              => 'required|string|max:255',
             'description'       => 'nullable|string',
             'pdf_file'          => 'nullable|file|mimes:pdf|max:10240',

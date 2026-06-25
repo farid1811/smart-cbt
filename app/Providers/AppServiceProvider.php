@@ -23,5 +23,10 @@ class AppServiceProvider extends ServiceProvider
         // Gunakan custom pagination view (resources/views/vendor/pagination/default.blade.php)
         Paginator::defaultView('vendor.pagination.default');
         Paginator::defaultSimpleView('vendor.pagination.simple-default');
+
+        // Force HTTPS in production environment
+        if (config('app.env') === 'production') {
+            \Illuminate\Support\Facades\URL::forceScheme('https');
+        }
     }
 }

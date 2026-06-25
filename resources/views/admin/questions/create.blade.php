@@ -52,7 +52,7 @@
             </div>
         </div>
 
-        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:1rem; margin-bottom:1.5rem; background:#f8fafc; padding:1.25rem; border-radius:8px; border:1px solid #e2e8f0;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.5rem; background:#f8fafc; padding:1.25rem; border-radius:8px; border:1px solid #e2e8f0;">
             {{-- Kode Soal --}}
             <div class="form-group">
                 <label style="font-weight:600; display:block; margin-bottom:0.5rem; font-size:0.85rem; color:#475569;">1. Kode Soal <span style="color:#ef4444;">*</span></label>
@@ -69,15 +69,6 @@
                     <option value="">-- Pilih Kategori --</option>
                 </select>
                 @error('category_id')<p class="form-error" style="color:#ef4444; font-size:0.75rem; margin-top:0.25rem;">{{ $message }}</p>@enderror
-            </div>
-
-            {{-- Sub Kategori --}}
-            <div class="form-group">
-                <label style="font-weight:600; display:block; margin-bottom:0.5rem; font-size:0.85rem; color:#475569;">3. Sub Kategori <span style="color:#ef4444;">*</span></label>
-                <select name="sub_category_id" id="sub_category_id" class="form-control" required disabled style="width:100%; padding:0.5rem; border-radius:4px; border:1px solid #cbd5e1;">
-                    <option value="">-- Pilih Sub Kategori --</option>
-                </select>
-                @error('sub_category_id')<p class="form-error" style="color:#ef4444; font-size:0.75rem; margin-top:0.25rem;">{{ $message }}</p>@enderror
             </div>
         </div>
 
@@ -178,20 +169,17 @@
     const groupSelect = document.getElementById('group_id');
     const codeSelect = document.getElementById('question_code_id');
     const catSelect = document.getElementById('category_id');
-    const subSelect = document.getElementById('sub_category_id');
 
     async function loadCodes(groupId, selectedCodeId = null) {
         codeSelect.innerHTML = '<option value="">-- Pilih Kode Soal --</option>';
         codeSelect.disabled = true;
         catSelect.innerHTML = '<option value="">-- Pilih Kategori --</option>';
         catSelect.disabled = true;
-        subSelect.innerHTML = '<option value="">-- Pilih Sub Kategori --</option>';
-        subSelect.disabled = true;
 
         if (!groupId) return;
 
         try {
-            const response = await fetch(`/admin/api/codes/${groupId}`);
+            const response = await fetch(`${window.CbtConfig.baseUrl}/admin/api/codes/${groupId}`);
             const codes = await response.json();
             if (codes.length > 0) {
                 codes.forEach(c => {
@@ -210,13 +198,11 @@
     async function loadCategories(codeId, selectedCatId = null) {
         catSelect.innerHTML = '<option value="">-- Pilih Kategori --</option>';
         catSelect.disabled = true;
-        subSelect.innerHTML = '<option value="">-- Pilih Sub Kategori --</option>';
-        subSelect.disabled = true;
 
         if (!codeId) return;
 
         try {
-            const response = await fetch(`/admin/api/categories/${codeId}`);
+            const response = await fetch(`${window.CbtConfig.baseUrl}/admin/api/categories/${codeId}`);
             const cats = await response.json();
             if (cats.length > 0) {
                 cats.forEach(c => {
@@ -227,29 +213,6 @@
                     catSelect.appendChild(opt);
                 });
                 catSelect.disabled = false;
-                if (selectedCatId) catSelect.dispatchEvent(new Event('change'));
-            }
-        } catch (e) { console.error(e); }
-    }
-
-    async function loadSubCategories(catId, selectedSubId = null) {
-        subSelect.innerHTML = '<option value="">-- Pilih Sub Kategori --</option>';
-        subSelect.disabled = true;
-
-        if (!catId) return;
-
-        try {
-            const response = await fetch(`/admin/api/subcategories/${catId}`);
-            const subs = await response.json();
-            if (subs.length > 0) {
-                subs.forEach(s => {
-                    const opt = document.createElement('option');
-                    opt.value = s.id;
-                    opt.textContent = s.name;
-                    if (selectedSubId && s.id == selectedSubId) opt.selected = true;
-                    subSelect.appendChild(opt);
-                });
-                subSelect.disabled = false;
             }
         } catch (e) { console.error(e); }
     }
@@ -262,25 +225,16 @@
         loadCategories(this.value);
     });
 
-    catSelect.addEventListener('change', function() {
-        loadSubCategories(this.value);
-    });
-
     document.addEventListener('DOMContentLoaded', function() {
         // Old validation values check
         const oldGroup = "{{ old('group_id') }}";
         const oldCode = "{{ old('question_code_id') }}";
         const oldCat = "{{ old('category_id') }}";
-        const oldSub = "{{ old('sub_category_id') }}";
 
         if (oldGroup) {
             loadCodes(oldGroup, oldCode).then(() => {
                 if (oldCode) {
-                    loadCategories(oldCode, oldCat).then(() => {
-                        if (oldCat) {
-                            loadSubCategories(oldCat, oldSub);
-                        }
-                    });
+                    loadCategories(oldCode, oldCat);
                 }
             });
         }

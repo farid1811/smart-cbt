@@ -27,12 +27,8 @@
         <option value="">Semua Kategori</option>
     </select>
 
-    <select name="sub_category_id" id="subcategory_filter" class="form-control" style="max-width:160px;" disabled>
-        <option value="">Semua Sub Kategori</option>
-    </select>
-
     <button type="submit" class="btn btn-primary" style="padding: 0.5rem 1rem;">Filter</button>
-    @if(request()->hasAny(['search','group_id','question_code_id','category_id','sub_category_id']))
+    @if(request()->hasAny(['search','group_id','question_code_id','category_id']))
         <a href="{{ route('admin.modules.index') }}" class="btn btn-secondary" style="padding: 0.5rem 1rem;">Reset</a>
     @endif
 </form>
@@ -70,7 +66,7 @@
                             <span class="badge" style="background:#eff6ff; color:#1e40af; border-color:#bfdbfe; font-weight:700;">{{ $m->questionCode?->code ?? '—' }}</span>
                         </div>
                         <div style="color:#64748b; font-size:0.8rem; margin-top:0.15rem;">
-                            {{ $m->category->name ?? '—' }} &rarr; <span style="font-weight:500;">{{ $m->subCategory->name ?? '—' }}</span>
+                            {{ $m->category->name ?? '—' }}
                         </div>
                     </div>
                 </td>
@@ -125,20 +121,17 @@
     const groupSelect = document.getElementById('group_filter');
     const codeSelect = document.getElementById('code_filter');
     const catSelect = document.getElementById('category_filter');
-    const subSelect = document.getElementById('subcategory_filter');
 
     async function loadCodes(groupId, selectedCodeId = null) {
         codeSelect.innerHTML = '<option value="">Semua Kode</option>';
         codeSelect.disabled = true;
         catSelect.innerHTML = '<option value="">Semua Kategori</option>';
         catSelect.disabled = true;
-        subSelect.innerHTML = '<option value="">Semua Sub Kategori</option>';
-        subSelect.disabled = true;
 
         if (!groupId) return;
 
         try {
-            const response = await fetch(`/admin/api/codes/${groupId}`);
+            const response = await fetch(`${window.CbtConfig.baseUrl}/admin/api/codes/${groupId}`);
             const codes = await response.json();
             if (codes.length > 0) {
                 codes.forEach(c => {
@@ -157,13 +150,11 @@
     async function loadCategories(codeId, selectedCatId = null) {
         catSelect.innerHTML = '<option value="">Semua Kategori</option>';
         catSelect.disabled = true;
-        subSelect.innerHTML = '<option value="">Semua Sub Kategori</option>';
-        subSelect.disabled = true;
 
         if (!codeId) return;
 
         try {
-            const response = await fetch(`/admin/api/categories/${codeId}`);
+            const response = await fetch(`${window.CbtConfig.baseUrl}/admin/api/categories/${codeId}`);
             const cats = await response.json();
             if (cats.length > 0) {
                 cats.forEach(c => {
@@ -174,29 +165,6 @@
                     catSelect.appendChild(opt);
                 });
                 catSelect.disabled = false;
-                if (selectedCatId) catSelect.dispatchEvent(new Event('change'));
-            }
-        } catch (e) { console.error(e); }
-    }
-
-    async function loadSubCategories(catId, selectedSubId = null) {
-        subSelect.innerHTML = '<option value="">Semua Sub Kategori</option>';
-        subSelect.disabled = true;
-
-        if (!catId) return;
-
-        try {
-            const response = await fetch(`/admin/api/subcategories/${catId}`);
-            const subs = await response.json();
-            if (subs.length > 0) {
-                subs.forEach(s => {
-                    const opt = document.createElement('option');
-                    opt.value = s.id;
-                    opt.textContent = s.name;
-                    if (selectedSubId && s.id == selectedSubId) opt.selected = true;
-                    subSelect.appendChild(opt);
-                });
-                subSelect.disabled = false;
             }
         } catch (e) { console.error(e); }
     }
@@ -209,24 +177,15 @@
         loadCategories(this.value);
     });
 
-    catSelect.addEventListener('change', function() {
-        loadSubCategories(this.value);
-    });
-
     document.addEventListener('DOMContentLoaded', function() {
         const oldGroup = "{{ request('group_id') }}";
         const oldCode = "{{ request('question_code_id') }}";
         const oldCat = "{{ request('category_id') }}";
-        const oldSub = "{{ request('sub_category_id') }}";
 
         if (oldGroup) {
             loadCodes(oldGroup, oldCode).then(() => {
                 if (oldCode) {
-                    loadCategories(oldCode, oldCat).then(() => {
-                        if (oldCat) {
-                            loadSubCategories(oldCat, oldSub);
-                        }
-                    });
+                    loadCategories(oldCode, oldCat);
                 }
             });
         }

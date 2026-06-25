@@ -456,7 +456,7 @@ class ExamController extends Controller
             abort(403);
         }
 
-        $result->load(['examSession.answers.question.questionCode', 'examSession.answers.question.category', 'examSession.answers.question.subCategory', 'tryoutPackage', 'user']);
+        $result->load(['examSession.answers.question.questionCode', 'examSession.answers.question.category', 'tryoutPackage', 'user']);
         return view('peserta.exam.result', compact('result'));
     }
 

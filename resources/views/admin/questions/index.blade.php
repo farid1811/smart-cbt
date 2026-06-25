@@ -4,7 +4,6 @@
 @section('topbar-actions')
     <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
         <button onclick="openModal('deleteByGroupModal')" class="btn btn-danger" style="font-weight:600;">🗑️ Hapus per Kategori</button>
-        <a href="{{ route('admin.questions.importForm') }}" class="btn btn-secondary" style="font-weight:600;">Import Word (DOCX)</a>
         <a href="{{ route('admin.questions.create', ['tryout_package_id' => request('tryout_package_id')]) }}" class="btn btn-primary" style="font-weight:700;">+ Tambah Soal</a>
     </div>
 @endsection
@@ -125,12 +124,8 @@
         <option value="">Semua Kategori</option>
     </select>
 
-    <select name="sub_category_id" id="subcategory_filter" class="form-control" style="max-width:150px;" disabled>
-        <option value="">Semua Sub Kategori</option>
-    </select>
-
     <button type="submit" class="btn btn-secondary">Filter</button>
-    @if(request()->hasAny(['search','tryout_package_id','package_type','group_id','question_code_id','category_id','sub_category_id']))
+    @if(request()->hasAny(['search','tryout_package_id','package_type','group_id','question_code_id','category_id']))
         <a href="{{ route('admin.questions.index') }}" class="btn btn-secondary">Reset</a>
     @endif
 </form>
@@ -196,7 +191,7 @@
                             {{ $q->group->name ?? '—' }} &rarr; <span class="badge-code">{{ $q->questionCode?->code ?? '—' }}</span>
                         </div>
                         <div style="font-size:0.75rem; color:#64748b; margin-top:0.25rem;">
-                            {{ $q->category->name ?? '—' }} &rarr; <span style="font-weight:500;">{{ $q->subCategory->name ?? '—' }}</span>
+                            {{ $q->category->name ?? '—' }}
                         </div>
                     </td>
                     <td style="padding:1rem; text-align:center;">
@@ -226,12 +221,12 @@
 </form>
 
 <!-- ==============================================
-     MODALS FOR BULK DELETE BY CATEGORY/SUBCATEGORY
+     MODALS FOR BULK DELETE BY CATEGORY
      ============================================== -->
 <div id="deleteByGroupModal" class="modal-backdrop">
     <div class="modal-box">
         <div class="modal-header">
-            <h3>🗑️ Hapus Soal per Kategori / Sub Kategori</h3>
+            <h3>🗑️ Hapus Soal per Kategori</h3>
             <button onclick="closeModal('deleteByGroupModal')" class="modal-close">&times;</button>
         </div>
         <div class="modal-body">
@@ -249,25 +244,6 @@
                 </div>
                 <div style="display:flex; justify-content:flex-end;">
                     <button type="submit" class="btn btn-danger btn-sm" style="font-weight:700; width:100%; justify-content:center; padding:0.6rem;">Hapus Semua Soal Kategori</button>
-                </div>
-            </form>
-
-            <hr style="border:0; border-top:1px solid #e2e8f0; margin:1.5rem 0;">
-
-            <!-- Delete by Sub Category Form -->
-            <form method="POST" action="{{ route('admin.questions.deleteBySubCategory') }}" onsubmit="return confirm('PERINGATAN: Hapus semua soal dalam Sub Kategori terpilih? Tindakan ini tidak dapat dibatalkan!')">
-                @csrf
-                <div class="form-group">
-                    <label>Hapus Semua Soal berdasarkan Sub Kategori</label>
-                    <select name="sub_category_id" required>
-                        <option value="">-- Pilih Sub Kategori --</option>
-                        @foreach($subCategories as $sub)
-                            <option value="{{ $sub->id }}">[{{ $sub->category?->questionCode?->group?->name ?? '—' }} - {{ $sub->category?->questionCode?->code ?? '—' }}] {{ $sub->category?->name ?? '—' }} &rarr; {{ $sub->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div style="display:flex; justify-content:flex-end;">
-                    <button type="submit" class="btn btn-danger btn-sm" style="font-weight:700; width:100%; justify-content:center; padding:0.6rem;">Hapus Semua Soal Sub Kategori</button>
                 </div>
             </form>
         </div>
@@ -340,20 +316,17 @@
     const groupSelect = document.getElementById('group_filter');
     const codeSelect = document.getElementById('code_filter');
     const catSelect = document.getElementById('category_filter');
-    const subSelect = document.getElementById('subcategory_filter');
 
     async function loadCodes(groupId, selectedCodeId = null) {
         codeSelect.innerHTML = '<option value="">Semua Kode</option>';
         codeSelect.disabled = true;
         catSelect.innerHTML = '<option value="">Semua Kategori</option>';
         catSelect.disabled = true;
-        subSelect.innerHTML = '<option value="">Semua Sub Kategori</option>';
-        subSelect.disabled = true;
 
         if (!groupId) return;
 
         try {
-            const response = await fetch(`/admin/api/codes/${groupId}`);
+            const response = await fetch(`${window.CbtConfig.baseUrl}/admin/api/codes/${groupId}`);
             const codes = await response.json();
             if (codes.length > 0) {
                 codes.forEach(c => {
@@ -372,13 +345,11 @@
     async function loadCategories(codeId, selectedCatId = null) {
         catSelect.innerHTML = '<option value="">Semua Kategori</option>';
         catSelect.disabled = true;
-        subSelect.innerHTML = '<option value="">Semua Sub Kategori</option>';
-        subSelect.disabled = true;
 
         if (!codeId) return;
 
         try {
-            const response = await fetch(`/admin/api/categories/${codeId}`);
+            const response = await fetch(`${window.CbtConfig.baseUrl}/admin/api/categories/${codeId}`);
             const cats = await response.json();
             if (cats.length > 0) {
                 cats.forEach(c => {
@@ -389,29 +360,6 @@
                     catSelect.appendChild(opt);
                 });
                 catSelect.disabled = false;
-                if (selectedCatId) catSelect.dispatchEvent(new Event('change'));
-            }
-        } catch (e) { console.error(e); }
-    }
-
-    async function loadSubCategories(catId, selectedSubId = null) {
-        subSelect.innerHTML = '<option value="">Semua Sub Kategori</option>';
-        subSelect.disabled = true;
-
-        if (!catId) return;
-
-        try {
-            const response = await fetch(`/admin/api/subcategories/${catId}`);
-            const subs = await response.json();
-            if (subs.length > 0) {
-                subs.forEach(s => {
-                    const opt = document.createElement('option');
-                    opt.value = s.id;
-                    opt.textContent = s.name;
-                    if (selectedSubId && s.id == selectedSubId) opt.selected = true;
-                    subSelect.appendChild(opt);
-                });
-                subSelect.disabled = false;
             }
         } catch (e) { console.error(e); }
     }
@@ -424,24 +372,15 @@
         loadCategories(this.value);
     });
 
-    catSelect.addEventListener('change', function() {
-        loadSubCategories(this.value);
-    });
-
     document.addEventListener('DOMContentLoaded', function() {
         const oldGroup = "{{ request('group_id') }}";
         const oldCode = "{{ request('question_code_id') }}";
         const oldCat = "{{ request('category_id') }}";
-        const oldSub = "{{ request('sub_category_id') }}";
 
         if (oldGroup) {
             loadCodes(oldGroup, oldCode).then(() => {
                 if (oldCode) {
-                    loadCategories(oldCode, oldCat).then(() => {
-                        if (oldCat) {
-                            loadSubCategories(oldCat, oldSub);
-                        }
-                    });
+                    loadCategories(oldCode, oldCat);
                 }
             });
         }

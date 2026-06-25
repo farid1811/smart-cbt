@@ -182,10 +182,6 @@
                 
                 <div class="category-breadcrumb">
                     <span>{{ $m->category->name ?? 'Materi' }}</span>
-                    @if(isset($m->subCategory))
-                        <span class="breadcrumb-separator">&rarr;</span>
-                        <span>{{ $m->subCategory->name }}</span>
-                    @endif
                 </div>
                 
                 <h4 style="font-size:1rem; font-weight:700; color:var(--text); line-height:1.4; margin-top:0.25rem;">

@@ -42,7 +42,6 @@
                 <th>Username</th>
                 <th>Grup</th>
                 <th>Kategori</th>
-                <th>Paket Ditugaskan</th>
                 <th style="width:90px;text-align:center;">Status</th>
                 <th style="width:180px;text-align:center;">Aksi</th>
             </tr>
@@ -77,13 +76,7 @@
                         <span style="color:#cbd5e1;">—</span>
                     @endif
                 </td>
-                <td>
-                    @if($p->assignedPackage)
-                        <span style="font-weight:600;font-size:0.8rem;color:var(--text);">{{ $p->assignedPackage->nama }}</span>
-                    @else
-                        <span style="color:#cbd5e1;font-size:0.8rem;">Tidak ada</span>
-                    @endif
-                </td>
+
                 <td style="text-align:center;">
                     @if($p->is_active)
                         <span class="badge badge-active">Aktif</span>
@@ -144,7 +137,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="8">
+                <td colspan="7">
                     <div class="empty-state">
                         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                         <p style="font-weight:600;margin-top:0.75rem;">Belum ada data peserta.</p>

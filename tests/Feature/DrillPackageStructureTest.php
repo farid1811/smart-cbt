@@ -6,7 +6,6 @@ use App\Models\User;
 use App\Models\Group;
 use App\Models\QuestionCode;
 use App\Models\Category;
-use App\Models\SubCategory;
 use App\Models\TryoutPackage;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -20,7 +19,6 @@ class DrillPackageStructureTest extends TestCase
     private Group $group;
     private QuestionCode $code;
     private Category $category;
-    private SubCategory $subCategory;
 
     protected function setUp(): void
     {
@@ -50,11 +48,6 @@ class DrillPackageStructureTest extends TestCase
             'question_code_id' => $this->code->id,
             'name' => 'Pilar Negara'
         ]);
-
-        $this->subCategory = SubCategory::create([
-            'category_id' => $this->category->id,
-            'name' => 'Pancasila'
-        ]);
     }
 
     public function test_store_drill_package_resolves_relations_successfully(): void
@@ -67,7 +60,6 @@ class DrillPackageStructureTest extends TestCase
                 'group_id' => $this->group->id,
                 'question_code_id' => $this->code->id,
                 'category_id' => $this->category->id,
-                'sub_category_id' => $this->subCategory->id,
                 'attempt_limit' => 3,
                 'durasi_menit' => 30,
                 'is_active' => true,
@@ -84,13 +76,12 @@ class DrillPackageStructureTest extends TestCase
             'category_id' => $this->category->id,
             'category' => 'Pilar Negara', // resolved automatically
             'question_code_id' => $this->code->id,
-            'sub_category_id' => $this->subCategory->id,
             'attempt_limit' => 3,
             'durasi_menit' => 30,
         ]);
     }
 
-    public function test_store_tryout_package_clears_drill_relations(): void
+    public function test_store_tryout_package_stores_relations_successfully(): void
     {
         $response = $this->actingAs($this->admin)
             ->post(route('admin.tryouts.store'), [
@@ -98,7 +89,8 @@ class DrillPackageStructureTest extends TestCase
                 'deskripsi' => 'Simulasi ujian lengkap',
                 'jenis_ujian' => 'tryout',
                 'group_id' => $this->group->id,
-                'category' => 'CPNS',
+                'question_code_id' => $this->code->id,
+                'category_id' => $this->category->id,
                 'attempt_limit' => 2,
                 'durasi_menit' => 90,
                 'is_active' => true,
@@ -112,10 +104,11 @@ class DrillPackageStructureTest extends TestCase
             'jenis_ujian' => 'tryout',
             'group_id' => $this->group->id,
             'group' => 'SKD', // resolved automatically
-            'category' => 'CPNS',
-            'question_code_id' => null,
-            'category_id' => null,
-            'sub_category_id' => null,
+            'category_id' => $this->category->id,
+            'category' => 'Pilar Negara', // resolved automatically
+            'question_code_id' => $this->code->id,
+            'attempt_limit' => 2,
+            'durasi_menit' => 90,
         ]);
     }
 
@@ -130,7 +123,6 @@ class DrillPackageStructureTest extends TestCase
             'category_id' => $this->category->id,
             'category' => 'Pilar Negara',
             'question_code_id' => $this->code->id,
-            'sub_category_id' => $this->subCategory->id,
             'attempt_limit' => 3,
             'durasi_menit' => 30,
             'is_active' => true,
@@ -143,7 +135,6 @@ class DrillPackageStructureTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Drill Pancasila 1');
         $response->assertSee('Pilar Negara');
-        $response->assertSee('Pancasila');
     }
 
     public function test_participant_drills_listing_displays_drill_hierarchy(): void
@@ -157,7 +148,6 @@ class DrillPackageStructureTest extends TestCase
             'category_id' => $this->category->id,
             'category' => 'Pilar Negara',
             'question_code_id' => $this->code->id,
-            'sub_category_id' => $this->subCategory->id,
             'attempt_limit' => 3,
             'durasi_menit' => 30,
             'is_active' => true,
@@ -170,6 +160,5 @@ class DrillPackageStructureTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Drill Pancasila 1');
         $response->assertSee('Pilar Negara');
-        $response->assertSee('Pancasila');
     }
 }

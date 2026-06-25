@@ -7,7 +7,6 @@ use App\Models\TryoutPackage;
 use App\Models\Group;
 use App\Models\QuestionCode;
 use App\Models\Category;
-use App\Models\SubCategory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Tests\TestCase;
@@ -93,14 +92,6 @@ class WordImportTest extends TestCase
             'is_active'=> true,
         ]);
 
-        $package = TryoutPackage::create([
-            'nama' => 'Paket Tryout Test',
-            'durasi_menit' => 30,
-            'is_active' => true,
-            'group' => 'SKD',
-            'category' => 'CPNS',
-        ]);
-
         $group = Group::create([
             'name' => 'SKD'
         ]);
@@ -116,9 +107,15 @@ class WordImportTest extends TestCase
             'name' => 'Pelayanan Publik'
         ]);
 
-        $subCategory = SubCategory::create([
+        $package = TryoutPackage::create([
+            'nama' => 'Paket Tryout Test',
+            'durasi_menit' => 30,
+            'is_active' => true,
+            'group_id' => $group->id,
+            'group' => 'SKD',
+            'question_code_id' => $code->id,
             'category_id' => $category->id,
-            'name' => 'Sikap Kerja'
+            'category' => 'Pelayanan Publik',
         ]);
 
         $rowsData = [
@@ -170,19 +167,18 @@ class WordImportTest extends TestCase
         );
 
         $response = $this->actingAs($admin)
-            ->post(route('admin.questions.importPreview'), [
+            ->post(route('admin.tryouts.import.word', $package->id), [
                 'file' => $uploadedFile,
-                'tryout_package_id' => $package->id,
             ]);
 
         @unlink($tempFile);
 
         $response->assertStatus(200);
-        $response->assertViewIs('admin.questions.import_preview');
+        $response->assertViewIs('admin.tryouts.import_preview');
         $response->assertViewHas('questions');
-        $response->assertSessionHas('temp_import_questions');
+        $response->assertSessionHas('import_questions_' . $package->id);
 
-        $sessionQuestions = session('temp_import_questions');
+        $sessionQuestions = session('import_questions_' . $package->id);
         $this->assertCount(1, $sessionQuestions);
         $this->assertEquals('Apa tindakan Anda jika melihat warga kebingungan mengisi formulir?', trim($sessionQuestions[0]['soal']));
         $this->assertEquals('Membantu langsung dengan sabar', trim($sessionQuestions[0]['opsi_c']));
@@ -195,12 +191,9 @@ class WordImportTest extends TestCase
 
         // Now simulate confirming the import
         $confirmResponse = $this->actingAs($admin)
-            ->post(route('admin.questions.importConfirm'), [
+            ->post(route('admin.tryouts.import.confirm', $package->id), [
                 'q' => [
                     0 => [
-                        'question_code_id' => $code->id,
-                        'category_id' => $category->id,
-                        'sub_category_id' => $subCategory->id,
                         'jawaban_benar' => 'C',
                         'tingkat_kesulitan' => 'sedang',
                         'soal' => 'Apa tindakan Anda jika melihat warga kebingungan mengisi formulir?',
@@ -245,16 +238,30 @@ class WordImportTest extends TestCase
             'is_active'=> true,
         ]);
 
+        $group = Group::create([
+            'name' => 'SKD'
+        ]);
+
+        $code = QuestionCode::create([
+            'group_id' => $group->id,
+            'name' => 'Tes Inteligensia Umum',
+            'code' => 'TIU'
+        ]);
+
+        $category = Category::create([
+            'question_code_id' => $code->id,
+            'name' => 'Figural'
+        ]);
+
         $package = TryoutPackage::create([
             'nama' => 'Paket Tryout Fallback Test',
             'durasi_menit' => 30,
             'is_active' => true,
+            'group_id' => $group->id,
             'group' => 'SKD',
-            'category' => 'CPNS',
-        ]);
-
-        Group::create([
-            'name' => 'SKD'
+            'question_code_id' => $code->id,
+            'category_id' => $category->id,
+            'category' => 'Figural',
         ]);
 
         $paragraphs = [
@@ -276,15 +283,14 @@ class WordImportTest extends TestCase
         );
 
         $response = $this->actingAs($admin)
-            ->post(route('admin.questions.importPreview'), [
+            ->post(route('admin.tryouts.import.word', $package->id), [
                 'file' => $uploadedFile,
-                'tryout_package_id' => $package->id,
             ]);
 
         @unlink($tempFile);
 
         $response->assertRedirect();
-        $response->assertSessionHas('error', 'Gagal mengimpor file Word: Gagal membaca tabel soal pada dokumen. Dokumen Anda tidak memiliki tabel sama sekali.');
+        $response->assertSessionHas('error', "Gagal mengimpor: Tidak ditemukan format soal yang sesuai.");
     }
 
     public function test_word_import_figural_image_only_question(): void
@@ -296,14 +302,6 @@ class WordImportTest extends TestCase
             'password' => bcrypt('password'),
             'role'     => 'admin',
             'is_active'=> true,
-        ]);
-
-        $package = TryoutPackage::create([
-            'nama' => 'Paket Figural Test',
-            'durasi_menit' => 30,
-            'is_active' => true,
-            'group' => 'SKD',
-            'category' => 'CPNS',
         ]);
 
         $group = Group::create([
@@ -321,9 +319,15 @@ class WordImportTest extends TestCase
             'name' => 'Figural'
         ]);
 
-        $subCategory = SubCategory::create([
+        $package = TryoutPackage::create([
+            'nama' => 'Paket Figural Test',
+            'durasi_menit' => 30,
+            'is_active' => true,
+            'group_id' => $group->id,
+            'group' => 'SKD',
+            'question_code_id' => $code->id,
             'category_id' => $category->id,
-            'name' => 'Analogi Gambar'
+            'category' => 'Figural',
         ]);
 
         $tinyPng = $this->createTinyPng();
@@ -361,17 +365,16 @@ class WordImportTest extends TestCase
         );
 
         $response = $this->actingAs($admin)
-            ->post(route('admin.questions.importPreview'), [
+            ->post(route('admin.tryouts.import.word', $package->id), [
                 'file' => $uploadedFile,
-                'tryout_package_id' => $package->id,
             ]);
 
         @unlink($tempFile);
 
         $response->assertStatus(200);
-        $response->assertViewIs('admin.questions.import_preview');
+        $response->assertViewIs('admin.tryouts.import_preview');
 
-        $sessionQuestions = session('temp_import_questions');
+        $sessionQuestions = session('import_questions_' . $package->id);
         $this->assertCount(1, $sessionQuestions);
         
         $this->assertEquals('', trim($sessionQuestions[0]['soal']));
@@ -385,15 +388,11 @@ class WordImportTest extends TestCase
         // Ensure no review_required is set because extraction succeeded!
         $this->assertFalse($sessionQuestions[0]['review_required'] ?? false);
 
-        // Confirm the import - sending empty/null strings for text fields to verify that
-        // the controller defaults them to empty string instead of causing SQL Integrity Constraint failures.
+        // Confirm the import
         $confirmResponse = $this->actingAs($admin)
-            ->post(route('admin.questions.importConfirm'), [
+            ->post(route('admin.tryouts.import.confirm', $package->id), [
                 'q' => [
                     0 => [
-                        'question_code_id' => $code->id,
-                        'category_id' => $category->id,
-                        'sub_category_id' => $subCategory->id,
                         'jawaban_benar' => 'A',
                         'tingkat_kesulitan' => 'sedang',
                         'soal' => '',
@@ -414,7 +413,7 @@ class WordImportTest extends TestCase
 
         $confirmResponse->assertRedirect(route('admin.tryouts.show', $package));
 
-        // Assert that the question was created in the database and text fields are empty string (not causing NOT NULL constraints failures)
+        // Assert that the question was created in the database
         $this->assertDatabaseHas('questions', [
             'tryout_package_id' => $package->id,
             'soal' => '',
@@ -441,12 +440,30 @@ class WordImportTest extends TestCase
             'is_active'=> true,
         ]);
 
+        $group = Group::create([
+            'name' => 'SKD'
+        ]);
+
+        $code = QuestionCode::create([
+            'group_id' => $group->id,
+            'name' => 'Tes Inteligensia Umum',
+            'code' => 'TIU'
+        ]);
+
+        $category = Category::create([
+            'question_code_id' => $code->id,
+            'name' => 'Figural'
+        ]);
+
         $package = TryoutPackage::create([
             'nama' => 'Paket Tryout Inline Test',
             'durasi_menit' => 30,
             'is_active' => true,
+            'group_id' => $group->id,
             'group' => 'SKD',
-            'category' => 'CPNS',
+            'question_code_id' => $code->id,
+            'category_id' => $category->id,
+            'category' => 'Figural',
         ]);
 
         $paragraphs = [
@@ -467,15 +484,14 @@ class WordImportTest extends TestCase
         );
 
         $response = $this->actingAs($admin)
-            ->post(route('admin.questions.importPreview'), [
+            ->post(route('admin.tryouts.import.word', $package->id), [
                 'file' => $uploadedFile,
-                'tryout_package_id' => $package->id,
             ]);
 
         @unlink($tempFile);
 
         $response->assertRedirect();
-        $response->assertSessionHas('error', 'Gagal mengimpor file Word: Gagal membaca tabel soal pada dokumen. Dokumen Anda tidak memiliki tabel sama sekali.');
+        $response->assertSessionHas('error', "Gagal mengimpor: Tidak ditemukan format soal yang sesuai.");
     }
 
     public function test_word_table_import_explanation_and_kunci(): void
@@ -489,12 +505,30 @@ class WordImportTest extends TestCase
             'is_active'=> true,
         ]);
 
+        $group = Group::create([
+            'name' => 'SKD'
+        ]);
+
+        $code = QuestionCode::create([
+            'group_id' => $group->id,
+            'name' => 'Tes Inteligensia Umum',
+            'code' => 'TIU'
+        ]);
+
+        $category = Category::create([
+            'question_code_id' => $code->id,
+            'name' => 'Figural'
+        ]);
+
         $package = TryoutPackage::create([
             'nama' => 'Paket Tryout Table Expl Test',
             'durasi_menit' => 30,
             'is_active' => true,
+            'group_id' => $group->id,
             'group' => 'SKD',
-            'category' => 'CPNS',
+            'question_code_id' => $code->id,
+            'category_id' => $category->id,
+            'category' => 'Figural',
         ]);
 
         $rowsData = [
@@ -546,17 +580,16 @@ class WordImportTest extends TestCase
         );
 
         $response = $this->actingAs($admin)
-            ->post(route('admin.questions.importPreview'), [
+            ->post(route('admin.tryouts.import.word', $package->id), [
                 'file' => $uploadedFile,
-                'tryout_package_id' => $package->id,
             ]);
 
         @unlink($tempFile);
 
         $response->assertStatus(200);
-        $response->assertViewIs('admin.questions.import_preview');
+        $response->assertViewIs('admin.tryouts.import_preview');
 
-        $sessionQuestions = session('temp_import_questions');
+        $sessionQuestions = session('import_questions_' . $package->id);
         $this->assertCount(1, $sessionQuestions);
         $this->assertEquals('Siapakah presiden pertama Indonesia?', trim($sessionQuestions[0]['soal']));
         $this->assertEquals('Soekarno', trim($sessionQuestions[0]['opsi_b']));

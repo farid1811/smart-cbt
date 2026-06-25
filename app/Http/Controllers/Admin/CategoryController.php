@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Group;
 use App\Models\QuestionCode;
 use App\Models\Category;
-use App\Models\SubCategory;
 use Illuminate\Http\Request;
 
 class CategoryController extends Controller
@@ -29,18 +28,12 @@ class CategoryController extends Controller
         return response()->json($categories);
     }
 
-    public function getSubCategoriesByCategory($categoryId)
-    {
-        $subCategories = SubCategory::where('category_id', $categoryId)->get();
-        return response()->json($subCategories);
-    }
-
     // Unified List View (Tabbed)
     public function index()
     {
         $groups = Group::all();
         $codes = QuestionCode::with('group')->get();
-        $categories = Category::with(['questionCode.group', 'subCategories'])->get();
+        $categories = Category::with('questionCode.group')->get();
 
         return view('admin.categories.index', compact('groups', 'codes', 'categories'));
     }
@@ -104,43 +97,10 @@ class CategoryController extends Controller
 
     public function destroy(Category $category)
     {
-        if ($category->subCategories()->count() > 0 || $category->questions()->count() > 0) {
-            return back()->with('error', 'Kategori tidak bisa dihapus karena masih digunakan.');
+        if ($category->questions()->count() > 0) {
+            return back()->with('error', 'Kategori tidak bisa dihapus karena masih digunakan oleh soal.');
         }
         $category->delete();
         return redirect()->route('admin.categories.index', ['tab' => 'category'])->with('success', 'Kategori berhasil dihapus.');
     }
-
-    // Sub Category Store/Update/Destroy
-    public function storeSubCategory(Request $request)
-    {
-        $validated = $request->validate([
-            'category_id' => 'required|exists:categories,id',
-            'name'        => 'required|string|max:100',
-        ]);
-
-        SubCategory::create($validated);
-        return redirect()->route('admin.categories.index', ['tab' => 'category'])->with('success', 'Sub Kategori berhasil ditambahkan.');
-    }
-
-    public function updateSubCategory(Request $request, SubCategory $subcategory)
-    {
-        $validated = $request->validate([
-            'category_id' => 'required|exists:categories,id',
-            'name'        => 'required|string|max:100',
-        ]);
-
-        $subcategory->update($validated);
-        return redirect()->route('admin.categories.index', ['tab' => 'category'])->with('success', 'Sub Kategori berhasil diperbarui.');
-    }
-
-    public function destroySubCategory(SubCategory $subcategory)
-    {
-        if ($subcategory->questions()->count() > 0) {
-            return back()->with('error', 'Sub Kategori tidak bisa dihapus karena masih digunakan oleh soal.');
-        }
-        $subcategory->delete();
-        return redirect()->route('admin.categories.index', ['tab' => 'category'])->with('success', 'Sub Kategori berhasil dihapus.');
-    }
 }
-

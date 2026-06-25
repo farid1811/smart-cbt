@@ -12,7 +12,7 @@
                 {{ $module->questionCode?->code ?? '—' }}
             </span>
             <div style="font-size:0.75rem; color:var(--text-muted); font-weight:600; margin-bottom:0.5rem;">
-                {{ $module->category->name ?? '' }} &rarr; {{ $module->subCategory->name ?? '' }}
+                {{ $module->category->name ?? '' }}
             </div>
             <h2 style="font-weight: 800; font-size: 1.35rem; margin: 0 0 0.25rem; color:var(--text);">{{ $module->name }}</h2>
             <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">{{ $module->description }}</p>

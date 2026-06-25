@@ -55,10 +55,6 @@
                         @endif
                         <div style="font-size:0.75rem;color:var(--text-muted);margin-top:0.15rem;">
                             {{ $p->categoryRelation->name ?? $p->category }}
-                            @if($p->subCategory)
-                                <span style="color:#cbd5e1; margin:0 0.15rem;">&rarr;</span>
-                                <span style="color:#475569; font-weight:500;">{{ $p->subCategory->name }}</span>
-                            @endif
                         </div>
                     @else
                         <div style="font-size:0.75rem;color:var(--text-muted);">{{ $p->category }}</div>

@@ -21,7 +21,6 @@ class User extends Authenticatable
         'is_active',
         'group_id',
         'category',
-        'assigned_package_id',
     ];
 
     protected $hidden = [
@@ -41,11 +40,6 @@ class User extends Authenticatable
     public function group()
     {
         return $this->belongsTo(Group::class);
-    }
-
-    public function assignedPackage()
-    {
-        return $this->belongsTo(TryoutPackage::class, 'assigned_package_id');
     }
 
     public function packageAttempts()

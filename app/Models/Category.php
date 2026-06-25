@@ -13,11 +13,6 @@ class Category extends Model
         return $this->belongsTo(QuestionCode::class, 'question_code_id');
     }
 
-    public function subCategories()
-    {
-        return $this->hasMany(SubCategory::class);
-    }
-
     public function questions()
     {
         return $this->hasMany(Question::class);

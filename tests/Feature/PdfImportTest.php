@@ -4,6 +4,9 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use App\Models\TryoutPackage;
+use App\Models\Group;
+use App\Models\QuestionCode;
+use App\Models\Category;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Tests\TestCase;
@@ -11,6 +14,25 @@ use Tests\TestCase;
 class PdfImportTest extends TestCase
 {
     use RefreshDatabase;
+
+    private Group $group;
+    private QuestionCode $code;
+    private Category $category;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->group = Group::create(['name' => 'SKD']);
+        $this->code = QuestionCode::create([
+            'group_id' => $this->group->id,
+            'name' => 'Tes Inteligensia Umum',
+            'code' => 'TIU'
+        ]);
+        $this->category = Category::create([
+            'question_code_id' => $this->code->id,
+            'name' => 'Figural'
+        ]);
+    }
 
     private function buildPdf($text) {
         $objs = [
@@ -57,8 +79,11 @@ class PdfImportTest extends TestCase
             'nama' => 'Paket Tryout Test',
             'durasi_menit' => 30,
             'is_active' => true,
+            'group_id' => $this->group->id,
             'group' => 'SKD',
-            'category' => 'CPNS',
+            'question_code_id' => $this->code->id,
+            'category_id' => $this->category->id,
+            'category' => 'Figural',
         ]);
 
         $text = "BT\n/F1 12 Tf\n72 712 Td\n(1 | SOAL | Pertanyaan nomor satu |) Tj\nET\n" .
@@ -79,21 +104,19 @@ class PdfImportTest extends TestCase
         );
 
         $response = $this->actingAs($admin)
-            ->post(route('admin.questions.importPdfPreview'), [
+            ->post(route('admin.tryouts.import.pdf', $package->id), [
                 'file' => $uploadedFile,
-                'tryout_package_id' => $package->id,
             ]);
 
         // Clean up temp file
         @unlink($tempFile);
 
         $response->assertStatus(200);
-        $response->assertViewIs('admin.questions.import_preview');
+        $response->assertViewIs('admin.tryouts.import_preview');
         $response->assertViewHas('questions');
-        $response->assertSessionHas('temp_import_questions');
-        $response->assertSessionHas('temp_import_package_id', $package->id);
+        $response->assertSessionHas('import_questions_' . $package->id);
 
-        $sessionQuestions = session('temp_import_questions');
+        $sessionQuestions = session('import_questions_' . $package->id);
         $this->assertNotEmpty($sessionQuestions);
         $this->assertEquals('Pertanyaan nomor satu', trim($sessionQuestions[0]['soal']));
         $this->assertEquals('Pilihan A', trim($sessionQuestions[0]['opsi_a']));
@@ -167,8 +190,11 @@ class PdfImportTest extends TestCase
             'nama' => 'Paket Figural Test',
             'durasi_menit' => 30,
             'is_active' => true,
+            'group_id' => $this->group->id,
             'group' => 'SKD',
-            'category' => 'CPNS',
+            'question_code_id' => $this->code->id,
+            'category_id' => $this->category->id,
+            'category' => 'Figural',
         ]);
 
         $text = "BT\n/F1 12 Tf\n72 712 Td\n(1 | SOAL | |) Tj\nET\n" .
@@ -189,15 +215,14 @@ class PdfImportTest extends TestCase
         );
 
         $response = $this->actingAs($admin)
-            ->post(route('admin.questions.importPdfPreview'), [
+            ->post(route('admin.tryouts.import.pdf', $package->id), [
                 'file' => $uploadedFile,
-                'tryout_package_id' => $package->id,
             ]);
 
         @unlink($tempFile);
 
         $response->assertStatus(200);
-        $sessionQuestions = session('temp_import_questions');
+        $sessionQuestions = session('import_questions_' . $package->id);
         $this->assertNotEmpty($sessionQuestions);
         
         $q = $sessionQuestions[0];

@@ -16,7 +16,7 @@ class PesertaController extends Controller
      */
     public function index(Request $request)
     {
-        $query = User::where('role', 'peserta')->with(['group', 'assignedPackage']);
+        $query = User::where('role', 'peserta')->with(['group']);
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -49,8 +49,7 @@ class PesertaController extends Controller
     public function create()
     {
         $groups = \App\Models\Group::all();
-        $packages = \App\Models\TryoutPackage::where('is_active', true)->get();
-        return view('admin.peserta.create', compact('groups', 'packages'));
+        return view('admin.peserta.create', compact('groups'));
     }
 
     /**
@@ -67,7 +66,6 @@ class PesertaController extends Controller
             'password'   => ['required', 'confirmed', \Illuminate\Validation\Rules\Password::min(6)],
             'group_id'   => 'required|exists:groups,id',
             'category'   => 'required|string|max:50',
-            'assigned_package_id' => 'nullable|exists:tryout_packages,id',
             'is_active'  => 'nullable|boolean',
         ], [
             'name.required'       => 'Nama wajib diisi.',
@@ -94,7 +92,6 @@ class PesertaController extends Controller
             'role'       => 'peserta',
             'group_id'   => $validated['group_id'],
             'category'   => $validated['category'],
-            'assigned_package_id' => $validated['assigned_package_id'] ?? null,
             'is_active'  => $request->boolean('is_active', true),
         ]);
 
@@ -109,9 +106,8 @@ class PesertaController extends Controller
     {
         abort_if($peserta->role !== 'peserta', 404);
         $groups = \App\Models\Group::all();
-        $packages = \App\Models\TryoutPackage::where('is_active', true)->get();
 
-        return view('admin.peserta.edit', compact('peserta', 'groups', 'packages'));
+        return view('admin.peserta.edit', compact('peserta', 'groups'));
     }
 
     /**
@@ -129,7 +125,6 @@ class PesertaController extends Controller
             'no_hp'      => 'nullable|string|max:20',
             'group_id'   => 'required|exists:groups,id',
             'category'   => 'required|string|max:50',
-            'assigned_package_id' => 'nullable|exists:tryout_packages,id',
             'is_active'  => 'nullable|boolean',
         ], [
             'name.required'     => 'Nama wajib diisi.',
@@ -151,7 +146,6 @@ class PesertaController extends Controller
             'no_hp'      => $validated['no_hp'] ?? null,
             'group_id'   => $validated['group_id'],
             'category'   => $validated['category'],
-            'assigned_package_id' => $validated['assigned_package_id'] ?? null,
             'is_active'  => $request->boolean('is_active', true),
         ]);
 

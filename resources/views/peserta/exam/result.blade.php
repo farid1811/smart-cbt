@@ -379,7 +379,7 @@
             </div>
             <div class="soal-item-body" id="body-{{ $i }}">
                 <div style="font-size:0.72rem; color:var(--text-muted); font-weight:700; margin-bottom:0.5rem; text-transform:uppercase;">
-                    Kategori: {{ $q->category->name ?? '—' }} &rarr; {{ $q->subCategory->name ?? '—' }}
+                    Kategori: {{ $q->category->name ?? '—' }}
                 </div>
                 
                 <p style="font-size:0.9rem; margin-bottom:1rem; line-height:1.6; color:#0f172a; white-space: pre-wrap;">{{ $q->soal }}</p>

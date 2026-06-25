@@ -34,7 +34,6 @@
                 @error('group_id')<p class="form-error" style="color:#ef4444; font-size:0.75rem; margin-top:0.25rem;">{{ $message }}</p>@enderror
             </div>
 
-            {{-- 3-Level Dependent Hierarchy --}}
             <div style="background:#f8fafc; padding:1.25rem; border-radius:8px; border:1px solid #e2e8f0; margin-bottom:1.25rem;">
                 <div class="form-group" style="margin-bottom:1rem;">
                     <label class="form-label" style="font-weight:600; display:block; margin-bottom:0.5rem; font-size:0.85rem; color:#475569;">1. Kode Soal <span style="color:#ef4444;">*</span></label>
@@ -44,20 +43,12 @@
                     @error('question_code_id')<p class="form-error" style="color:#ef4444; font-size:0.75rem; margin-top:0.25rem;">{{ $message }}</p>@enderror
                 </div>
 
-                <div class="form-group" style="margin-bottom:1rem;">
+                <div class="form-group" style="margin-bottom:0;">
                     <label class="form-label" style="font-weight:600; display:block; margin-bottom:0.5rem; font-size:0.85rem; color:#475569;">2. Kategori <span style="color:#ef4444;">*</span></label>
                     <select name="category_id" id="category_id" class="form-control" required disabled style="width:100%; padding:0.5rem; border-radius:4px; border:1px solid #cbd5e1;">
                         <option value="">-- Pilih Kategori --</option>
                     </select>
                     @error('category_id')<p class="form-error" style="color:#ef4444; font-size:0.75rem; margin-top:0.25rem;">{{ $message }}</p>@enderror
-                </div>
-
-                <div class="form-group" style="margin-bottom:0;">
-                    <label class="form-label" style="font-weight:600; display:block; margin-bottom:0.5rem; font-size:0.85rem; color:#475569;">3. Sub Kategori <span style="color:#ef4444;">*</span></label>
-                    <select name="sub_category_id" id="sub_category_id" class="form-control" required disabled style="width:100%; padding:0.5rem; border-radius:4px; border:1px solid #cbd5e1;">
-                        <option value="">-- Pilih Sub Kategori --</option>
-                    </select>
-                    @error('sub_category_id')<p class="form-error" style="color:#ef4444; font-size:0.75rem; margin-top:0.25rem;">{{ $message }}</p>@enderror
                 </div>
             </div>
 
@@ -129,20 +120,17 @@
     const groupSelect = document.getElementById('group_id');
     const codeSelect = document.getElementById('question_code_id');
     const catSelect = document.getElementById('category_id');
-    const subSelect = document.getElementById('sub_category_id');
 
     async function loadCodes(groupId, selectedCodeId = null) {
         codeSelect.innerHTML = '<option value="">-- Pilih Kode Soal --</option>';
         codeSelect.disabled = true;
         catSelect.innerHTML = '<option value="">-- Pilih Kategori --</option>';
         catSelect.disabled = true;
-        subSelect.innerHTML = '<option value="">-- Pilih Sub Kategori --</option>';
-        subSelect.disabled = true;
 
         if (!groupId) return;
 
         try {
-            const response = await fetch(`/admin/api/codes/${groupId}`);
+            const response = await fetch(`${window.CbtConfig.baseUrl}/admin/api/codes/${groupId}`);
             const codes = await response.json();
             if (codes.length > 0) {
                 codes.forEach(c => {
@@ -161,13 +149,11 @@
     async function loadCategories(codeId, selectedCatId = null) {
         catSelect.innerHTML = '<option value="">-- Pilih Kategori --</option>';
         catSelect.disabled = true;
-        subSelect.innerHTML = '<option value="">-- Pilih Sub Kategori --</option>';
-        subSelect.disabled = true;
 
         if (!codeId) return;
 
         try {
-            const response = await fetch(`/admin/api/categories/${codeId}`);
+            const response = await fetch(`${window.CbtConfig.baseUrl}/admin/api/categories/${codeId}`);
             const cats = await response.json();
             if (cats.length > 0) {
                 cats.forEach(c => {
@@ -178,29 +164,6 @@
                     catSelect.appendChild(opt);
                 });
                 catSelect.disabled = false;
-                if (selectedCatId) catSelect.dispatchEvent(new Event('change'));
-            }
-        } catch (e) { console.error(e); }
-    }
-
-    async function loadSubCategories(catId, selectedSubId = null) {
-        subSelect.innerHTML = '<option value="">-- Pilih Sub Kategori --</option>';
-        subSelect.disabled = true;
-
-        if (!catId) return;
-
-        try {
-            const response = await fetch(`/admin/api/subcategories/${catId}`);
-            const subs = await response.json();
-            if (subs.length > 0) {
-                subs.forEach(s => {
-                    const opt = document.createElement('option');
-                    opt.value = s.id;
-                    opt.textContent = s.name;
-                    if (selectedSubId && s.id == selectedSubId) opt.selected = true;
-                    subSelect.appendChild(opt);
-                });
-                subSelect.disabled = false;
             }
         } catch (e) { console.error(e); }
     }
@@ -213,24 +176,15 @@
         loadCategories(this.value);
     });
 
-    catSelect.addEventListener('change', function() {
-        loadSubCategories(this.value);
-    });
-
     document.addEventListener('DOMContentLoaded', function() {
         const currentGroup = "{{ old('group_id', $module->group_id) }}";
         const currentCode = "{{ old('question_code_id', $module->question_code_id) }}";
         const currentCat = "{{ old('category_id', $module->category_id) }}";
-        const currentSub = "{{ old('sub_category_id', $module->sub_category_id) }}";
 
         if (currentGroup) {
             loadCodes(currentGroup, currentCode).then(() => {
                 if (currentCode) {
-                    loadCategories(currentCode, currentCat).then(() => {
-                        if (currentCat) {
-                            loadSubCategories(currentCat, currentSub);
-                        }
-                    });
+                    loadCategories(currentCode, currentCat);
                 }
             });
         }
