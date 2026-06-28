@@ -31,13 +31,11 @@ class TryoutPackageController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $rules = [
             'nama'                 => 'required|string|max:255',
             'deskripsi'            => 'nullable|string',
             'jenis_ujian'          => 'required|in:tryout,drill',
             'group_id'             => 'required|exists:groups,id',
-            'question_code_id'     => 'required|exists:question_codes,id',
-            'category_id'          => 'required|exists:categories,id',
             'attempt_limit'        => 'required|integer|min:1',
             'durasi_menit'         => 'required|integer|min:10|max:300',
             'is_active'            => 'boolean',
@@ -50,13 +48,29 @@ class TryoutPackageController extends Controller
             'token'                => 'nullable|string|max:255',
             'randomize_questions'  => 'boolean',
             'randomize_options'    => 'boolean',
-        ]);
+        ];
+
+        if ($request->input('jenis_ujian') === 'drill') {
+            $rules['question_code_id'] = 'required|exists:question_codes,id';
+            $rules['category_id'] = 'required|exists:categories,id';
+        } else {
+            $rules['question_code_id'] = 'nullable';
+            $rules['category_id'] = 'nullable';
+        }
+
+        $validated = $request->validate($rules);
 
         $group = \App\Models\Group::findOrFail($validated['group_id']);
         $validated['group'] = $group->name;
 
-        $categoryModel = \App\Models\Category::findOrFail($validated['category_id']);
-        $validated['category'] = $categoryModel->name;
+        if ($validated['jenis_ujian'] === 'drill') {
+            $categoryModel = \App\Models\Category::findOrFail($validated['category_id']);
+            $validated['category'] = $categoryModel->name;
+        } else {
+            $validated['question_code_id'] = null;
+            $validated['category_id'] = null;
+            $validated['category'] = null;
+        }
 
         $validated['is_active'] = $request->has('is_active');
         $validated['seb_browser_lockdown'] = $request->has('seb_browser_lockdown');
@@ -82,13 +96,11 @@ class TryoutPackageController extends Controller
 
     public function update(Request $request, TryoutPackage $tryout)
     {
-        $validated = $request->validate([
+        $rules = [
             'nama'                 => 'required|string|max:255',
             'deskripsi'            => 'nullable|string',
             'jenis_ujian'          => 'required|in:tryout,drill',
             'group_id'             => 'required|exists:groups,id',
-            'question_code_id'     => 'required|exists:question_codes,id',
-            'category_id'          => 'required|exists:categories,id',
             'attempt_limit'        => 'required|integer|min:1',
             'durasi_menit'         => 'required|integer|min:10|max:300',
             'is_active'            => 'boolean',
@@ -101,13 +113,29 @@ class TryoutPackageController extends Controller
             'token'                => 'nullable|string|max:255',
             'randomize_questions'  => 'boolean',
             'randomize_options'    => 'boolean',
-        ]);
+        ];
+
+        if ($request->input('jenis_ujian') === 'drill') {
+            $rules['question_code_id'] = 'required|exists:question_codes,id';
+            $rules['category_id'] = 'required|exists:categories,id';
+        } else {
+            $rules['question_code_id'] = 'nullable';
+            $rules['category_id'] = 'nullable';
+        }
+
+        $validated = $request->validate($rules);
 
         $group = \App\Models\Group::findOrFail($validated['group_id']);
         $validated['group'] = $group->name;
 
-        $categoryModel = \App\Models\Category::findOrFail($validated['category_id']);
-        $validated['category'] = $categoryModel->name;
+        if ($validated['jenis_ujian'] === 'drill') {
+            $categoryModel = \App\Models\Category::findOrFail($validated['category_id']);
+            $validated['category'] = $categoryModel->name;
+        } else {
+            $validated['question_code_id'] = null;
+            $validated['category_id'] = null;
+            $validated['category'] = null;
+        }
 
         $validated['is_active'] = $request->has('is_active');
         $validated['seb_browser_lockdown'] = $request->has('seb_browser_lockdown');

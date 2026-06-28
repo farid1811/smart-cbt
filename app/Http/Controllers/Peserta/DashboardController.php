@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\TryoutPackage;
 use App\Models\LearningModule;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class DashboardController extends Controller
 {
@@ -20,10 +21,20 @@ class DashboardController extends Controller
             ->limit(3)
             ->get();
 
-        $drills = TryoutPackage::where('group_id', $user->group_id)
+        $drillsQuery = TryoutPackage::where('group_id', $user->group_id)
             ->where('jenis_ujian', 'drill')
-            ->where('is_active', true)
-            ->withCount('questions')
+            ->where('is_active', true);
+
+        $tryoutsQuery = TryoutPackage::where('group_id', $user->group_id)
+            ->where('jenis_ujian', 'tryout')
+            ->where('is_active', true);
+
+        if ($user->assigned_package_id) {
+            $drillsQuery->where('id', $user->assigned_package_id);
+            $tryoutsQuery->where('id', $user->assigned_package_id);
+        }
+
+        $drills = $drillsQuery->withCount('questions')
             ->with([
                 'packageAttempts' => fn($q) => $q->where('participant_id', $user->id),
                 'categoryRelation',
@@ -32,10 +43,7 @@ class DashboardController extends Controller
             ->limit(3)
             ->get();
 
-        $tryouts = TryoutPackage::where('group_id', $user->group_id)
-            ->where('jenis_ujian', 'tryout')
-            ->where('is_active', true)
-            ->withCount('questions')
+        $tryouts = $tryoutsQuery->withCount('questions')
             ->with(['packageAttempts' => fn($q) => $q->where('participant_id', $user->id)])
             ->latest()
             ->limit(3)
@@ -78,10 +86,15 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        $drills = TryoutPackage::where('group_id', $user->group_id)
+        $drillsQuery = TryoutPackage::where('group_id', $user->group_id)
             ->where('jenis_ujian', 'drill')
-            ->where('is_active', true)
-            ->withCount('questions')
+            ->where('is_active', true);
+
+        if ($user->assigned_package_id) {
+            $drillsQuery->where('id', $user->assigned_package_id);
+        }
+
+        $drills = $drillsQuery->withCount('questions')
             ->with([
                 'packageAttempts' => fn($q) => $q->where('participant_id', $user->id),
                 'categoryRelation',
@@ -96,14 +109,42 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        $tryouts = TryoutPackage::where('group_id', $user->group_id)
+        $tryoutsQuery = TryoutPackage::where('group_id', $user->group_id)
             ->where('jenis_ujian', 'tryout')
-            ->where('is_active', true)
-            ->withCount('questions')
+            ->where('is_active', true);
+
+        if ($user->assigned_package_id) {
+            $tryoutsQuery->where('id', $user->assigned_package_id);
+        }
+
+        $tryouts = $tryoutsQuery->withCount('questions')
             ->with(['packageAttempts' => fn($q) => $q->where('participant_id', $user->id)])
             ->latest()
             ->paginate(10);
 
         return view('peserta.tryouts.index', compact('tryouts'));
+    }
+
+    public function streamPdf(LearningModule $module)
+    {
+        $user = Auth::user();
+
+        if (!$module->is_active || $module->group_id !== $user->group_id) {
+            abort(403, 'Anda tidak memiliki akses ke modul ini.');
+        }
+
+        if (!$module->pdf_file) {
+            abort(404, 'File PDF tidak ditemukan.');
+        }
+
+        $storagePath = str_replace('storage/', 'public/', $module->pdf_file);
+
+        if (!Storage::exists($storagePath)) {
+            abort(404, 'File PDF tidak ditemukan di storage.');
+        }
+
+        return Storage::response($storagePath, null, [
+            'Content-Disposition' => 'inline; filename="' . basename($module->pdf_file) . '"'
+        ]);
     }
 }

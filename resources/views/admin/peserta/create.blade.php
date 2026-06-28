@@ -107,6 +107,24 @@
                 </div>
             </div>
 
+            {{-- Paket Ditugaskan --}}
+            <div class="form-group">
+                <label class="form-label" for="assigned_package_id">
+                    Paket Ditugaskan <span style="font-size:0.75rem;color:var(--text-light);font-weight:normal;">(Opsional)</span>
+                </label>
+                <select id="assigned_package_id" name="assigned_package_id" class="form-control @error('assigned_package_id') is-invalid @enderror">
+                    <option value="">-- Tidak Ada (Akses Semua Paket) --</option>
+                    @foreach($packages as $package)
+                        <option value="{{ $package->id }}" {{ old('assigned_package_id') == $package->id ? 'selected' : '' }}>
+                            [{{ strtoupper($package->jenis_ujian) }}] {{ $package->nama }}
+                        </option>
+                    @endforeach
+                </select>
+                @error('assigned_package_id')
+                    <p class="form-error">{{ $message }}</p>
+                @enderror
+            </div>
+
 
 
             {{-- 2 kolom: Password & Konfirmasi --}}

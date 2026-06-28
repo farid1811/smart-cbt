@@ -28,6 +28,7 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::post('peserta/{peserta}/toggle-status',  [Admin\PesertaController::class, 'toggleStatus'])->name('peserta.toggleStatus');
 
     // Modul Pembelajaran
+    Route::get('modules/{module}/pdf', [Admin\ModuleController::class, 'streamPdf'])->name('modules.pdf');
     Route::resource('modules', Admin\ModuleController::class)->except(['show']);
 
     // Kategori & Hierarki (tanpa SubKategori)
@@ -52,7 +53,8 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::post('tryouts/{tryout}/add-question',    [Admin\TryoutPackageController::class, 'addQuestion'])->name('tryouts.addQuestion');
     Route::post('tryouts/{tryout}/remove-question', [Admin\TryoutPackageController::class, 'removeQuestion'])->name('tryouts.removeQuestion');
 
-    // Import Soal — terintegrasi ke dalam Detail Paket
+    // Import Soal (PDF & Word)
+    Route::get('tryouts/import/template/word', [Admin\ImportController::class, 'downloadTemplateWord'])->name('tryouts.import.template.word');
     Route::get('tryouts/{tryout}/import',             [Admin\ImportController::class, 'showForm'])->name('tryouts.import.form');
     Route::post('tryouts/{tryout}/import-word',       [Admin\ImportController::class, 'wordPreview'])->name('tryouts.import.word');
     Route::post('tryouts/{tryout}/import-pdf',        [Admin\ImportController::class, 'pdfPreview'])->name('tryouts.import.pdf');
@@ -66,6 +68,11 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::get('/pengaturan/homepage',  [Admin\HomepageController::class, 'index'])->name('homepage.index');
     Route::put('/pengaturan/homepage',  [Admin\HomepageController::class, 'update'])->name('homepage.update');
 
+    // Pengaturan Akun
+    Route::get('settings/account', [Admin\SettingsController::class, 'showAccountSettings'])->name('settings.account');
+    Route::post('settings/account/username', [Admin\SettingsController::class, 'updateUsername'])->name('settings.account.username');
+    Route::post('settings/account/password', [Admin\SettingsController::class, 'updatePassword'])->name('settings.account.password');
+
     // Pengaturan — Alumni CRUD
     Route::resource('alumni', Admin\AlumniController::class)->except(['show']);
 });
@@ -77,6 +84,7 @@ Route::middleware(['auth', 'is_peserta'])->prefix('peserta')->name('peserta.')->
 
     // Modul & Paket
     Route::get('/modules', [Peserta\DashboardController::class, 'modules'])->name('modules.index');
+    Route::get('/modules/{module}/pdf', [Peserta\DashboardController::class, 'streamPdf'])->name('modules.pdf');
     Route::get('/modules/{module}', [Peserta\DashboardController::class, 'showModule'])->name('modules.show');
     Route::get('/drills', [Peserta\DashboardController::class, 'drills'])->name('drills.index');
     Route::get('/tryouts', [Peserta\DashboardController::class, 'tryouts'])->name('tryouts.index');

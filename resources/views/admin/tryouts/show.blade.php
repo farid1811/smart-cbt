@@ -99,6 +99,7 @@
             <div class="table-header" style="border-bottom:1px solid var(--border);padding:1rem 1.25rem;">
                 <h3 style="margin:0;font-size:1rem;font-weight:700;">🏦 Tambah dari Bank Soal</h3>
             </div>
+            @if($tryout->jenis_ujian === 'drill')
             <div style="padding:0.75rem;border-bottom:1px solid var(--border);display:flex;gap:0.5rem;">
                 <select id="filterKategori" style="flex:1;padding:7px 10px;border-radius:7px;border:1px solid var(--border);background:var(--card);font-size:0.83rem;color:var(--text);">
                     <option value="">Semua Kategori</option>
@@ -109,6 +110,12 @@
                 <input type="text" id="searchSoal" placeholder="Cari soal..."
                        style="flex:2;padding:7px 10px;border-radius:7px;border:1px solid var(--border);background:var(--card);font-size:0.83rem;color:var(--text);">
             </div>
+            @else
+            <div style="padding:0.75rem;border-bottom:1px solid var(--border);display:flex;gap:0.5rem;">
+                <input type="text" id="searchSoal" placeholder="Cari soal..."
+                       style="flex:1;padding:7px 10px;border-radius:7px;border:1px solid var(--border);background:var(--card);font-size:0.83rem;color:var(--text);">
+            </div>
+            @endif
             <div id="bankList" style="max-height:440px;overflow-y:auto;padding:0.5rem;">
                 @foreach($categories as $cat)
                     @foreach($cat->questions as $q)
@@ -199,11 +206,15 @@ async function removeQuestion(questionId, btn) {
 }
 
 // Live filter bank soal
-document.getElementById('filterKategori').addEventListener('change', filterBank);
+const filterKategoriEl = document.getElementById('filterKategori');
+if (filterKategoriEl) {
+    filterKategoriEl.addEventListener('change', filterBank);
+}
 document.getElementById('searchSoal').addEventListener('input', filterBank);
 
 function filterBank() {
-    const cat = document.getElementById('filterKategori').value;
+    const filterKategoriEl = document.getElementById('filterKategori');
+    const cat = filterKategoriEl ? filterKategoriEl.value : '';
     const q = document.getElementById('searchSoal').value.toLowerCase();
     document.querySelectorAll('.bank-item').forEach(el => {
         const matchCat = !cat || el.dataset.cat === cat;

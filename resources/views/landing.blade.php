@@ -110,7 +110,6 @@
                 <nav class="hidden md:flex space-x-8">
                     <a href="#program" class="text-sm font-semibold text-slate-600 hover:text-primary transition-colors duration-200">Program Unggulan</a>
                     <a href="#alumni" class="text-sm font-semibold text-slate-600 hover:text-primary transition-colors duration-200">Alumni Sukses</a>
-                    <a href="#testimoni" class="text-sm font-semibold text-slate-600 hover:text-primary transition-colors duration-200">Testimoni</a>
                     <a href="#faq" class="text-sm font-semibold text-slate-600 hover:text-primary transition-colors duration-200">FAQ</a>
                 </nav>
                 
@@ -147,7 +146,6 @@
         <div id="mobileMenu" class="hidden md:hidden bg-white border-b border-slate-100 px-4 pt-2 pb-6 space-y-2">
             <a href="#program" class="block px-3 py-2 rounded-lg text-base font-semibold text-slate-600 hover:bg-slate-50 hover:text-primary transition-all">Program Unggulan</a>
             <a href="#alumni" class="block px-3 py-2 rounded-lg text-base font-semibold text-slate-600 hover:bg-slate-50 hover:text-primary transition-all">Alumni Sukses</a>
-            <a href="#testimoni" class="block px-3 py-2 rounded-lg text-base font-semibold text-slate-600 hover:bg-slate-50 hover:text-primary transition-all">Testimoni</a>
             <a href="#faq" class="block px-3 py-2 rounded-lg text-base font-semibold text-slate-600 hover:bg-slate-50 hover:text-primary transition-all">FAQ</a>
             <div class="border-t border-slate-100 pt-4 flex flex-col gap-2 px-3">
                 @auth
@@ -316,7 +314,7 @@
         </div>
     </section>
 
-    <!-- ─── 3. SECTION KELULUSAN ALUMNI ────────────────────────────────────── -->
+    <!-- ─── 3. SECTION KELULUSAN ALUMNI ──────────────────────────────────────── -->
     <section id="alumni" class="py-20 sm:py-24 bg-white scroll-mt-20">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center max-w-3xl mx-auto mb-16 space-y-3">
@@ -328,7 +326,7 @@
             </div>
             
             @if($alumniList->isEmpty())
-            {{-- Empty state: tampilkan pesan jika belum ada alumni di database --}}
+            <!-- Empty state: tampilkan pesan jika belum ada alumni di database -->
             <div class="text-center py-12 text-slate-400">
                 <svg class="w-12 h-12 mx-auto mb-3 opacity-40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                 <p class="text-sm font-medium">Data alumni belum tersedia.</p>
@@ -347,77 +345,6 @@
                 @endforeach
             </div>
             @endif
-        </div>
-    </section>
-
-    <!-- ─── 4. SECTION TESTIMONI ───────────────────────────────────────────── -->
-    <section id="testimoni" class="py-20 sm:py-24 bg-slate-50 scroll-mt-20 border-t border-slate-100">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center max-w-3xl mx-auto mb-16 space-y-3">
-                <span class="text-sm font-bold text-primary uppercase tracking-wider">Testimoni Sukses</span>
-                <h2 class="text-3xl sm:text-4xl font-display font-extrabold text-slate-900">{{ $settings->testimoni_section_title }}</h2>
-                <p class="text-slate-500 text-sm sm:text-base leading-relaxed">
-                    {{ $settings->testimoni_section_subtitle }}
-                </p>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
-                <!-- Testimoni 1 -->
-                <div class="bg-white border border-slate-200/60 rounded-3xl p-8 flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow duration-300">
-                    <p class="text-slate-600 italic text-sm leading-relaxed mb-6">
-                        "Belajar di Bimbel Plano sangat terarah. Latihan soalnya sangat relevan dengan tipe ujian asli dan tutor-tutornya memberikan tips penyelesaian cepat yang tidak diajarkan di sekolah. Sangat membantu saya hingga lolos STAN!"
-                    </p>
-                    <div class="flex items-center gap-4 border-t border-slate-100 pt-6">
-                        <img src="{{ asset('images/alumni-budi.webp') }}" alt="Budi Santoso Avatar" class="w-12 h-12 rounded-full object-cover shadow-sm border border-slate-200" loading="lazy">
-                        <div>
-                            <h4 class="font-bold text-slate-800 text-sm">Budi Santoso</h4>
-                            <span class="text-xs text-primary font-bold uppercase tracking-wider">Alumni Lolos STAN</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Testimoni 2 -->
-                <div class="bg-white border border-slate-200/60 rounded-3xl p-8 flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow duration-300">
-                    <p class="text-slate-600 italic text-sm leading-relaxed mb-6">
-                        "Metode bimbingan tatap muka Bimbel Plano membuat materi sesulit apa pun menjadi mudah dipahami. Ditambah lagi dengan tryout online yang rutin melatih mental dan kecepatan pengerjaan saya."
-                    </p>
-                    <div class="flex items-center gap-4 border-t border-slate-100 pt-6">
-                        <img src="{{ asset('images/alumni-siti.webp') }}" alt="Siti Aminah Avatar" class="w-12 h-12 rounded-full object-cover shadow-sm border border-slate-200" loading="lazy">
-                        <div>
-                            <h4 class="font-bold text-slate-800 text-sm">Siti Aminah</h4>
-                            <span class="text-xs text-primary font-bold uppercase tracking-wider">Alumni Lolos IPDN</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Testimoni 3 -->
-                <div class="bg-white border border-slate-200/60 rounded-3xl p-8 flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow duration-300">
-                    <p class="text-slate-600 italic text-sm leading-relaxed mb-6">
-                        "Tryout online dengan sistem penanda ragu-ragu dan pembahasan detail di platform Smart CBT Bimbel Plano melatih kesiapan taktis saya. Saya jadi sangat percaya diri di hari pelaksanaan ujian."
-                    </p>
-                    <div class="flex items-center gap-4 border-t border-slate-100 pt-6">
-                        <img src="{{ asset('images/alumni-riki.webp') }}" alt="Riki Wijaya Avatar" class="w-12 h-12 rounded-full object-cover shadow-sm border border-slate-200" loading="lazy">
-                        <div>
-                            <h4 class="font-bold text-slate-800 text-sm">Riki Wijaya</h4>
-                            <span class="text-xs text-primary font-bold uppercase tracking-wider">Alumni Lolos UI</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Testimoni 4 -->
-                <div class="bg-white border border-slate-200/60 rounded-3xl p-8 flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow duration-300">
-                    <p class="text-slate-600 italic text-sm leading-relaxed mb-6">
-                        "Pembahasan soal-soal di Bimbel Plano disajikan secara sistematis. Saya berhasil lolos di Universitas Syiah Kuala berkat bimbingan intensif dan latihan intensif tatap muka di sini."
-                    </p>
-                    <div class="flex items-center gap-4 border-t border-slate-100 pt-6">
-                        <img src="{{ asset('images/alumni-ani.webp') }}" alt="Ani Lestari Avatar" class="w-12 h-12 rounded-full object-cover shadow-sm border border-slate-200" loading="lazy">
-                        <div>
-                            <h4 class="font-bold text-slate-800 text-sm">Ani Lestari</h4>
-                            <span class="text-xs text-primary font-bold uppercase tracking-wider">Alumni Lolos USK</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     </section>
 
@@ -551,7 +478,6 @@
                     <div class="flex flex-col gap-2.5 text-sm text-slate-400">
                         <a href="#program" class="hover:text-white transition-colors">Program Unggulan</a>
                         <a href="#alumni" class="hover:text-white transition-colors">Alumni Sukses</a>
-                        <a href="#testimoni" class="hover:text-white transition-colors">Testimoni</a>
                         <a href="#faq" class="hover:text-white transition-colors">FAQ</a>
                         <div class="pt-4 border-t border-slate-800 flex flex-col gap-2">
                             <a href="{{ route('login') }}" class="text-xs font-bold text-white uppercase tracking-wider hover:text-primary-light transition-colors">Dashboard Peserta</a>

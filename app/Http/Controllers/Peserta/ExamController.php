@@ -19,6 +19,11 @@ class ExamController extends Controller
      */
     public function start(TryoutPackage $package, Request $request)
     {
+        $user = Auth::user();
+        if ($user->assigned_package_id && $user->assigned_package_id != $package->id) {
+            return redirect()->route('peserta.dashboard')->with('error', 'Anda tidak memiliki akses ke paket ini.');
+        }
+
         // Cek apakah tryout tersedia
         if (!$package->isAvailable()) {
             return redirect()->route('peserta.dashboard')->with('error', 'Tryout ini tidak tersedia saat ini.');
@@ -47,6 +52,11 @@ class ExamController extends Controller
 
         if ($attemptsCount >= $package->attempt_limit) {
             return redirect()->route('peserta.dashboard')->with('error', 'Anda telah mencapai batas maksimum percobaan (' . $package->attempt_limit . 'x) untuk paket ini.');
+        }
+
+        // Cek apakah paket memiliki soal
+        if ($package->questions()->count() === 0) {
+            return redirect()->route('peserta.dashboard')->with('error', 'Paket ujian ini belum memiliki soal. Silakan hubungi admin.');
         }
 
         // Cek token jika diatur
@@ -144,7 +154,11 @@ class ExamController extends Controller
             $questionsById = $session->tryoutPackage->questions()->get()->keyBy('id');
             $questions = collect($soalOrder)->map(fn($id) => $questionsById->get($id))->filter()->values();
         } else {
-            $questions = $session->tryoutPackage->questions;
+            $questions = $session->tryoutPackage->questions->values();
+        }
+
+        if ($questions->isEmpty()) {
+            return redirect()->route('peserta.dashboard')->with('error', 'Paket ujian ini tidak memiliki soal.');
         }
 
         $totalSoal = $questions->count();

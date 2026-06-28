@@ -20,7 +20,7 @@ class ImportController extends Controller
 
     public function wordPreview(Request $request, TryoutPackage $tryout)
     {
-        if (is_null($tryout->category_id)) {
+        if ($tryout->jenis_ujian === 'drill' && is_null($tryout->category_id)) {
             return back()->with('error', 'Kategori pada Paket belum dipilih.');
         }
 
@@ -52,44 +52,27 @@ class ImportController extends Controller
             mkdir($tempImportDir, 0777, true);
         }
 
-        $zipAvailable = class_exists('ZipArchive');
-
-        if ($zipAvailable) {
-            try {
-                \PhpOffice\PhpWord\Settings::setTempDir($tempImportDir);
-                $phpWord = IOFactory::load($filePath);
-                $questions = $this->parseWordTables($phpWord, $warnings, $stats);
-
-                $hasImagesInRels = false;
-                $relsContent = $this->readFileFromZip($filePath, 'word/_rels/document.xml.rels');
-                if (!empty($relsContent)) {
-                    if (strpos($relsContent, '/relationships/image') !== false) {
-                        $hasImagesInRels = true;
-                    }
-                }
-
-                if ($hasImagesInRels && $stats['images_count'] === 0) {
-                    throw new \Exception("PHPWord mengekstrak 0 gambar tetapi dokumen memiliki gambar.");
-                }
-            } catch (\Throwable $e) {
-                \Log::error("DOCX Import per Paket: PHPWord gagal. Pesan: " . $e->getMessage() . ". Fallback ke XML parser.");
-                $warnings[] = "Gagal memproses dengan parser utama, menggunakan parser XML cadangan.";
+        // Gunakan parseDocxXml sebagai parser utama karena jauh lebih handal dalam mengekstrak semua jenis gambar (VML, Drawing, dll.) secara rekursif
+        try {
+            $questions = $this->parseDocxXml($filePath, $warnings, $stats, $tempImportDir);
+        } catch (\Throwable $e) {
+            \Log::error("DOCX Import per Paket: XML parser gagal. Pesan: " . $e->getMessage() . ". Mencoba fallback ke PHPWord.");
+            
+            if (class_exists('ZipArchive')) {
                 try {
-                    $questions = $this->parseDocxXml($filePath, $warnings, $stats, $tempImportDir);
+                    \PhpOffice\PhpWord\Settings::setTempDir($tempImportDir);
+                    $phpWord = IOFactory::load($filePath);
+                    $questions = $this->parseWordTables($phpWord, $warnings, $stats, $tempImportDir);
                 } catch (\Throwable $e2) {
-                    return back()->with('error', 'Gagal memproses file Word: ' . $e->getMessage());
+                    return back()->with('error', 'Gagal memproses file Word: ' . $e2->getMessage());
                 }
-            }
-        } else {
-            try {
-                $questions = $this->parseDocxXml($filePath, $warnings, $stats, $tempImportDir);
-            } catch (\Throwable $e) {
+            } else {
                 return back()->with('error', 'Gagal memproses file Word: ' . $e->getMessage());
             }
         }
 
         if (empty($questions)) {
-            return back()->with('error', "Gagal mengimpor: Tidak ditemukan format soal yang sesuai.");
+            return back()->with('error', "Format Word tidak sesuai dengan Template Import Smart CBT. Silakan unduh Template Word terlebih dahulu dan sesuaikan struktur dokumen sebelum melakukan import.");
         }
 
         session([
@@ -102,7 +85,7 @@ class ImportController extends Controller
 
     public function pdfPreview(Request $request, TryoutPackage $tryout)
     {
-        if (is_null($tryout->category_id)) {
+        if ($tryout->jenis_ujian === 'drill' && is_null($tryout->category_id)) {
             return back()->with('error', 'Kategori pada Paket belum dipilih.');
         }
 
@@ -336,7 +319,7 @@ class ImportController extends Controller
 
     public function confirm(Request $request, TryoutPackage $tryout)
     {
-        if (is_null($tryout->category_id)) {
+        if ($tryout->jenis_ujian === 'drill' && is_null($tryout->category_id)) {
             return redirect()->route('admin.tryouts.show', $tryout)->with('error', 'Kategori pada Paket belum dipilih.');
         }
 
@@ -372,17 +355,43 @@ class ImportController extends Controller
                 $overrides = $request->input('q', []);
             }
 
+            $qCodeId = $tryout->question_code_id;
+            $qCatId = $tryout->category_id;
+
+            if ($tryout->jenis_ujian === 'tryout') {
+                if (is_null($qCodeId)) {
+                    $fallbackCode = \App\Models\QuestionCode::where('group_id', $tryout->group_id)->first();
+                    if ($fallbackCode) {
+                        $qCodeId = $fallbackCode->id;
+                    }
+                }
+                if (is_null($qCatId)) {
+                    if ($qCodeId) {
+                        $fallbackCat = \App\Models\Category::where('question_code_id', $qCodeId)->first();
+                        if ($fallbackCat) {
+                            $qCatId = $fallbackCat->id;
+                        }
+                    } else {
+                        $fallbackCat = \App\Models\Category::first();
+                        if ($fallbackCat) {
+                            $qCatId = $fallbackCat->id;
+                            $qCodeId = $fallbackCat->question_code_id;
+                        }
+                    }
+                }
+            }
+
             foreach ($questions as $index => $qData) {
                 $override = $overrides[$index] ?? [];
                 $jawabanBenar = $override['jawaban_benar'] ?? $qData['jawaban_benar'] ?? 'A';
                 $tingkatKesulitan = $override['tingkat_kesulitan'] ?? $qData['tingkat_kesulitan'] ?? 'sedang';
-                $soalText = ($override['soal'] ?? $qData['soal']) ?? '';
-                $opsiA = ($override['opsi_a'] ?? $qData['opsi_a']) ?? '';
-                $opsiB = ($override['opsi_b'] ?? $qData['opsi_b']) ?? '';
-                $opsiC = ($override['opsi_c'] ?? $qData['opsi_c']) ?? '';
-                $opsiD = ($override['opsi_d'] ?? $qData['opsi_d']) ?? '';
-                $opsiE = ($override['opsi_e'] ?? $qData['opsi_e']) ?? '';
-                $pembahasan = ($override['pembahasan'] ?? $qData['pembahasan']) ?? '';
+                $soalText = html_entity_decode(($override['soal'] ?? $qData['soal']) ?? '', ENT_QUOTES, 'UTF-8');
+                $opsiA = html_entity_decode(($override['opsi_a'] ?? $qData['opsi_a']) ?? '', ENT_QUOTES, 'UTF-8');
+                $opsiB = html_entity_decode(($override['opsi_b'] ?? $qData['opsi_b']) ?? '', ENT_QUOTES, 'UTF-8');
+                $opsiC = html_entity_decode(($override['opsi_c'] ?? $qData['opsi_c']) ?? '', ENT_QUOTES, 'UTF-8');
+                $opsiD = html_entity_decode(($override['opsi_d'] ?? $qData['opsi_d']) ?? '', ENT_QUOTES, 'UTF-8');
+                $opsiE = html_entity_decode(($override['opsi_e'] ?? $qData['opsi_e']) ?? '', ENT_QUOTES, 'UTF-8');
+                $pembahasan = html_entity_decode(($override['pembahasan'] ?? $qData['pembahasan']) ?? '', ENT_QUOTES, 'UTF-8');
 
                 $scoreA = (int)($override['score_a'] ?? $qData['score_a'] ?? 0);
                 $scoreB = (int)($override['score_b'] ?? $qData['score_b'] ?? 0);
@@ -394,11 +403,13 @@ class ImportController extends Controller
                 if (is_null($tryout->group_id)) {
                     throw new \Exception("Group ID pada Paket tidak boleh kosong.");
                 }
-                if (is_null($tryout->question_code_id)) {
-                    throw new \Exception("Kode Soal pada Paket tidak boleh kosong.");
-                }
-                if (is_null($tryout->category_id)) {
-                    throw new \Exception("Kategori pada Paket tidak boleh kosong.");
+                if ($tryout->jenis_ujian === 'drill') {
+                    if (is_null($tryout->question_code_id)) {
+                        throw new \Exception("Kode Soal pada Paket tidak boleh kosong.");
+                    }
+                    if (is_null($tryout->category_id)) {
+                        throw new \Exception("Kategori pada Paket tidak boleh kosong.");
+                    }
                 }
 
                 $qImg = $moveFile($qData['question_image']);
@@ -413,8 +424,8 @@ class ImportController extends Controller
                     'tryout_package_id' => $tryout->id,
                     'urutan'            => ++$maxUrutan,
                     'group_id'          => $tryout->group_id,
-                    'question_code_id'  => $tryout->question_code_id,
-                    'category_id'       => $tryout->category_id,
+                    'question_code_id'  => $tryout->question_code_id ?? $qCodeId,
+                    'category_id'       => $tryout->category_id ?? $qCatId,
                     'soal'              => $soalText,
                     'image'             => $qImg,
                     'question_image'    => $qImg,
@@ -476,24 +487,16 @@ class ImportController extends Controller
         $cell->registerXPathNamespace('a', 'http://schemas.openxmlformats.org/drawingml/2006/main');
         $cell->registerXPathNamespace('v', 'urn:schemas-microsoft-com:vml');
         $cell->registerXPathNamespace('r', 'http://schemas.openxmlformats.org/officeDocument/2006/relationships');
+        $cell->registerXPathNamespace('pic', 'http://schemas.openxmlformats.org/drawingml/2006/picture');
 
-        $blips = $cell->xpath('.//a:blip');
-        $vmls = $cell->xpath('.//v:imagedata');
-
+        // Scan seluruh atribut secara rekursif untuk mencari value berformat 'rId...'
         $rIds = [];
-        if (!empty($blips)) {
-            foreach ($blips as $blip) {
-                $attrs = $blip->attributes('http://schemas.openxmlformats.org/officeDocument/2006/relationships');
-                if (isset($attrs['embed'])) {
-                    $rIds[] = (string)$attrs['embed'];
-                }
-            }
-        }
-        if (!empty($vmls)) {
-            foreach ($vmls as $vml) {
-                $attrs = $vml->attributes('http://schemas.openxmlformats.org/officeDocument/2006/relationships');
-                if (isset($attrs['id'])) {
-                    $rIds[] = (string)$attrs['id'];
+        $allAttributes = $cell->xpath('.//@*');
+        if (!empty($allAttributes)) {
+            foreach ($allAttributes as $attr) {
+                $val = (string)$attr;
+                if (strpos($val, 'rId') === 0) {
+                    $rIds[] = $val;
                 }
             }
         }
@@ -503,15 +506,18 @@ class ImportController extends Controller
         foreach ($rIds as $rId) {
             if (isset($rels[$rId])) {
                 $target = $rels[$rId];
-                $zipPath = 'word/' . ltrim($target, '/');
-                $imageData = $this->readFileFromZip($docxPath, $zipPath);
-                if (!empty($imageData)) {
-                    $ext = pathinfo($zipPath, PATHINFO_EXTENSION) ?: 'png';
-                    $filename = 'extracted_xml_img_' . uniqid() . '.' . $ext;
-                    $fullPath = $tempImportDir . '/' . $filename;
-                    if (file_put_contents($fullPath, $imageData) !== false) {
-                        $images[] = 'storage/temp_import/' . $filename;
-                        \Log::info("DOCX XML Parser: Berhasil mengekstrak gambar dari cell: {$zipPath}");
+                $ext = strtolower(pathinfo($target, PATHINFO_EXTENSION));
+                $imageExtensions = ['png', 'jpg', 'jpeg', 'gif', 'wmf', 'emf', 'svg', 'webp'];
+                if (in_array($ext, $imageExtensions)) {
+                    $zipPath = 'word/' . ltrim($target, '/');
+                    $imageData = $this->readFileFromZip($docxPath, $zipPath);
+                    if (!empty($imageData)) {
+                        $filename = 'extracted_xml_img_' . uniqid() . '.' . $ext;
+                        $fullPath = $tempImportDir . '/' . $filename;
+                        if (file_put_contents($fullPath, $imageData) !== false) {
+                            $images[] = 'storage/temp_import/' . $filename;
+                            \Log::info("DOCX XML Parser: Berhasil mengekstrak gambar dari cell: {$zipPath}");
+                        }
                     }
                 }
             }
@@ -641,7 +647,7 @@ class ImportController extends Controller
                     }
                     $currentQuestion = [
                         'soal' => $isiText,
-                        'question_image' => !empty($isiImages) ? $isiImages[0] : null,
+                        'question_image' => $this->mergeImagesVertically($isiImages, $tempImportDir),
                         'tingkat_kesulitan' => 'sedang',
                         'pembahasan' => '',
                         'explanation_image' => null,
@@ -651,15 +657,13 @@ class ImportController extends Controller
                     $stats['jawaban_count']++;
                     $options[] = [
                         'text' => $isiText,
-                        'image' => !empty($isiImages) ? $isiImages[0] : null,
+                        'image' => $this->mergeImagesVertically($isiImages, $tempImportDir),
                         'score' => (int)$jawabanText
                     ];
                 } elseif ($isPembahasan && $currentQuestion) {
                     $stats['pembahasan_count']++;
                     $currentQuestion['pembahasan'] = $isiText;
-                    if (!empty($isiImages)) {
-                        $currentQuestion['explanation_image'] = $isiImages[0];
-                    }
+                    $currentQuestion['explanation_image'] = $this->mergeImagesVertically($isiImages, $tempImportDir);
                 } elseif ($isKunci && $currentQuestion) {
                     $stats['kunci_count']++;
                     if (preg_match('/([A-E])/i', $isiText . $jawabanText, $m)) {
@@ -772,8 +776,12 @@ class ImportController extends Controller
         return null;
     }
 
-    private function parseWordTables($phpWord, &$warnings, &$stats = null)
+    private function parseWordTables($phpWord, &$warnings, &$stats = null, $tempImportDir = null)
     {
+        if (!$tempImportDir) {
+            $tempImportDir = public_path('storage/temp_import');
+        }
+
         if ($stats === null) {
             $stats = [
                 'tables_count' => 0,
@@ -901,7 +909,7 @@ class ImportController extends Controller
 
                             $currentQuestion = [
                                 'soal' => trim($isiText),
-                                'question_image' => !empty($isiImages) ? $isiImages[0] : null,
+                                'question_image' => $this->mergeImagesVertically($isiImages, $tempImportDir),
                                 'tingkat_kesulitan' => 'sedang',
                                 'pembahasan' => '',
                                 'explanation_image' => null,
@@ -931,7 +939,7 @@ class ImportController extends Controller
 
                                 $options[] = [
                                     'text' => trim($isiText),
-                                    'image' => !empty($isiImages) ? $isiImages[0] : null,
+                                    'image' => $this->mergeImagesVertically($isiImages, $tempImportDir),
                                     'score' => $score
                                 ];
 
@@ -950,9 +958,7 @@ class ImportController extends Controller
                                 $stats['images_count'] += count($isiImages);
 
                                 $currentQuestion['pembahasan'] = trim($isiText);
-                                if (!empty($isiImages)) {
-                                    $currentQuestion['explanation_image'] = $isiImages[0];
-                                }
+                                $currentQuestion['explanation_image'] = $this->mergeImagesVertically($isiImages, $tempImportDir);
 
                                 if ($hasImg && empty($isiImages)) {
                                     $warnings[] = "REVIEW REQUIRED: Gagal mengekstrak gambar pembahasan pada Soal #{$qNum}.";
@@ -1204,5 +1210,186 @@ class ImportController extends Controller
         }
 
         return $q;
+    }
+
+    private function mergeImagesVertically(array $imagePaths, string $tempImportDir): ?string
+    {
+        if (empty($imagePaths)) {
+            return null;
+        }
+        if (count($imagePaths) === 1) {
+            return $imagePaths[0];
+        }
+
+        $validPaths = [];
+        foreach ($imagePaths as $path) {
+            $fullPath = public_path($path);
+            if (file_exists($fullPath)) {
+                $validPaths[] = $fullPath;
+            }
+        }
+
+        if (empty($validPaths)) {
+            return null;
+        }
+        if (count($validPaths) === 1) {
+            return str_replace(public_path() . DIRECTORY_SEPARATOR, '', $validPaths[0]);
+        }
+
+        $totalHeight = 0;
+        $maxWidth = 0;
+        $imagesInfo = [];
+
+        foreach ($validPaths as $path) {
+            $info = @getimagesize($path);
+            if ($info === false) continue;
+            
+            $width = $info[0];
+            $height = $info[1];
+            $type = $info[2];
+
+            $imagesInfo[] = [
+                'path' => $path,
+                'width' => $width,
+                'height' => $height,
+                'type' => $type
+            ];
+
+            if ($width > $maxWidth) {
+                $maxWidth = $width;
+            }
+            $totalHeight += $height + 10;
+        }
+
+        if (empty($imagesInfo)) {
+            return null;
+        }
+
+        $totalHeight -= 10;
+
+        $destImg = @imagecreatetruecolor($maxWidth, $totalHeight);
+        if (!$destImg) {
+            return str_replace(public_path() . DIRECTORY_SEPARATOR, '', $validPaths[0]);
+        }
+
+        $white = imagecolorallocate($destImg, 255, 255, 255);
+        imagefill($destImg, 0, 0, $white);
+
+        $currentY = 0;
+        foreach ($imagesInfo as $img) {
+            $srcImg = null;
+            switch ($img['type']) {
+                case IMAGETYPE_JPEG:
+                    $srcImg = @imagecreatefromjpeg($img['path']);
+                    break;
+                case IMAGETYPE_PNG:
+                    $srcImg = @imagecreatefrompng($img['path']);
+                    break;
+                case IMAGETYPE_GIF:
+                    $srcImg = @imagecreatefromgif($img['path']);
+                    break;
+                case IMAGETYPE_WEBP:
+                    if (function_exists('imagecreatefromwebp')) {
+                        $srcImg = @imagecreatefromwebp($img['path']);
+                    }
+                    break;
+            }
+
+            if ($srcImg) {
+                $offsetX = ($maxWidth - $img['width']) / 2;
+                imagecopy($destImg, $srcImg, $offsetX, $currentY, 0, 0, $img['width'], $img['height']);
+                imagedestroy($srcImg);
+                $currentY += $img['height'] + 10;
+            }
+        }
+
+        $filename = 'merged_img_' . uniqid() . '.png';
+        $outputPath = $tempImportDir . '/' . $filename;
+        
+        if (@imagepng($destImg, $outputPath)) {
+            imagedestroy($destImg);
+            return 'storage/temp_import/' . $filename;
+        }
+
+        imagedestroy($destImg);
+        return str_replace(public_path() . DIRECTORY_SEPARATOR, '', $validPaths[0]);
+    }
+
+    public function downloadTemplateWord()
+    {
+        $phpWord = new \PhpOffice\PhpWord\PhpWord();
+        $section = $phpWord->addSection();
+
+        $section->addText("TEMPLATE IMPORT SOAL - SMART CBT", ['name' => 'Arial', 'size' => 16, 'bold' => true]);
+        $section->addText("Petunjuk: Isi tabel di bawah ini untuk mengimpor soal. Kolom 'Jawaban' digunakan untuk bobot nilai pilihan jawaban.", ['name' => 'Arial', 'size' => 10, 'italic' => true]);
+        $section->addTextBreak(1);
+
+        $styleTable = ['borderSize' => 6, 'borderColor' => '999999', 'cellMargin' => 80];
+        $styleFirstRowHeader = ['bgColor' => 'EAEAEA', 'bold' => true];
+        $phpWord->addTableStyle('TemplateTable', $styleTable, $styleFirstRowHeader);
+        $table = $section->addTable('TemplateTable');
+
+        $table->addRow();
+        $table->addCell(1000)->addText("No", ['bold' => true]);
+        $table->addCell(2000)->addText("Jenis", ['bold' => true]);
+        $table->addCell(5000)->addText("Isi", ['bold' => true]);
+        $table->addCell(1500)->addText("Jawaban", ['bold' => true]);
+
+        // Contoh Soal 1
+        $table->addRow();
+        $table->addCell(1000)->addText("1");
+        $table->addCell(2000)->addText("SOAL");
+        $table->addCell(5000)->addText("Manakah yang merupakan lambang sila pertama Pancasila?");
+        $table->addCell(1500)->addText("");
+
+        $table->addRow();
+        $table->addCell(1000)->addText("1");
+        $table->addCell(2000)->addText("JAWABAN A");
+        $table->addCell(5000)->addText("Bintang");
+        $table->addCell(1500)->addText("5");
+
+        $table->addRow();
+        $table->addCell(1000)->addText("1");
+        $table->addCell(2000)->addText("JAWABAN B");
+        $table->addCell(5000)->addText("Rantai");
+        $table->addCell(1500)->addText("0");
+
+        $table->addRow();
+        $table->addCell(1000)->addText("1");
+        $table->addCell(2000)->addText("JAWABAN C");
+        $table->addCell(5000)->addText("Pohon Beringin");
+        $table->addCell(1500)->addText("0");
+
+        $table->addRow();
+        $table->addCell(1000)->addText("1");
+        $table->addCell(2000)->addText("JAWABAN D");
+        $table->addCell(5000)->addText("Kepala Banteng");
+        $table->addCell(1500)->addText("0");
+
+        $table->addRow();
+        $table->addCell(1000)->addText("1");
+        $table->addCell(2000)->addText("JAWABAN E");
+        $table->addCell(5000)->addText("Padi dan Kapas");
+        $table->addCell(1500)->addText("0");
+
+        $table->addRow();
+        $table->addCell(1000)->addText("1");
+        $table->addCell(2000)->addText("KUNCI");
+        $table->addCell(5000)->addText("A");
+        $table->addCell(1500)->addText("");
+
+        $table->addRow();
+        $table->addCell(1000)->addText("1");
+        $table->addCell(2000)->addText("PEMBAHASAN");
+        $table->addCell(5000)->addText("Sila pertama berlambangkan bintang emas dengan latar belakang hitam.");
+        $table->addCell(1500)->addText("");
+
+        $filename = "Template_Import_Soal_SmartCBT.docx";
+        $tempFile = tempnam(sys_get_temp_dir(), 'docx');
+        
+        $objWriter = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'Word2007');
+        $objWriter->save($tempFile);
+
+        return response()->download($tempFile, $filename)->deleteFileAfterSend(true);
     }
 }

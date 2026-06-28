@@ -23,11 +23,15 @@
             <textarea name="deskripsi" class="form-control" rows="3">{{ old('deskripsi', $tryout->deskripsi) }}</textarea>
         </div>
 
+        @php
+            $isDrill = (old('jenis_ujian', $tryout->jenis_ujian) === 'drill');
+        @endphp
+
         {{-- Program/Grup, Kode Soal, Batas Percobaan, & Kategori --}}
-        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:1rem; margin-bottom:1rem;">
+        <div style="display:grid; grid-template-columns: {{ $isDrill ? '1fr 1fr 1fr' : '1fr 1fr' }}; gap:1rem; margin-bottom:1rem;">
             <div class="form-group" style="margin-bottom:0;">
                 <label>Program / Grup <span style="color:#ef4444;">*</span></label>
-                <select name="group_id" id="groupSelect" class="form-control @error('group_id') is-invalid @enderror" required onchange="loadCodes()">
+                <select name="group_id" id="groupSelect" class="form-control @error('group_id') is-invalid @enderror" required @if($isDrill) onchange="loadCodes()" @endif>
                     <option value="">-- Pilih --</option>
                     @foreach($groups as $g)
                         <option value="{{ $g->id }}" {{ old('group_id', $tryout->group_id) == $g->id ? 'selected' : '' }}>{{ $g->name }}</option>
@@ -35,6 +39,7 @@
                 </select>
                 @error('group_id')<p class="form-error">{{ $message }}</p>@enderror
             </div>
+            @if($isDrill)
             <div class="form-group" style="margin-bottom:0;">
                 <label>Kode Soal <span style="color:#ef4444;">*</span></label>
                 <select name="question_code_id" id="codeSelect" class="form-control @error('question_code_id') is-invalid @enderror" required onchange="loadCategories()">
@@ -42,12 +47,14 @@
                 </select>
                 @error('question_code_id')<p class="form-error">{{ $message }}</p>@enderror
             </div>
+            @endif
             <div class="form-group" style="margin-bottom:0;">
                 <label>Batas Percobaan <span style="color:#ef4444;">*</span></label>
                 <input type="number" name="attempt_limit" class="form-control @error('attempt_limit') is-invalid @enderror" value="{{ old('attempt_limit', $tryout->attempt_limit) }}" min="1" required>
                 @error('attempt_limit')<p class="form-error">{{ $message }}</p>@enderror
             </div>
         </div>
+        @if($isDrill)
         <div style="display:grid; grid-template-columns: 1fr; gap:1rem; margin-bottom:1rem;">
             <div class="form-group" style="margin-bottom:0;">
                 <label>Kategori <span style="color:#ef4444;">*</span></label>
@@ -57,6 +64,7 @@
                 @error('category_id')<p class="form-error">{{ $message }}</p>@enderror
             </div>
         </div>
+        @endif
 
         <div class="form-row">
             <div class="form-group">
@@ -201,15 +209,18 @@ async function loadCategories(selectedId = null) {
 document.addEventListener('DOMContentLoaded', async function() {
     toggleSebFields();
     
-    const groupId = "{{ old('group_id', $tryout->group_id) }}";
-    const selectedCodeId = "{{ old('question_code_id', $tryout->question_code_id) }}";
-    const selectedCategoryId = "{{ old('category_id', $tryout->category_id) }}";
-    
-    if (groupId) {
-        await loadCodes(selectedCodeId);
-    }
-    if (selectedCodeId) {
-        await loadCategories(selectedCategoryId);
+    const isDrill = {{ $isDrill ? 'true' : 'false' }};
+    if (isDrill) {
+        const groupId = "{{ old('group_id', $tryout->group_id) }}";
+        const selectedCodeId = "{{ old('question_code_id', $tryout->question_code_id) }}";
+        const selectedCategoryId = "{{ old('category_id', $tryout->category_id) }}";
+        
+        if (groupId) {
+            await loadCodes(selectedCodeId);
+        }
+        if (selectedCodeId) {
+            await loadCategories(selectedCategoryId);
+        }
     }
 });
 </script>

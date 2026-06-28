@@ -16,7 +16,7 @@ class PesertaController extends Controller
      */
     public function index(Request $request)
     {
-        $query = User::where('role', 'peserta')->with(['group']);
+        $query = User::where('role', 'peserta')->with(['group', 'assignedPackage']);
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -49,7 +49,8 @@ class PesertaController extends Controller
     public function create()
     {
         $groups = \App\Models\Group::all();
-        return view('admin.peserta.create', compact('groups'));
+        $packages = \App\Models\TryoutPackage::orderBy('jenis_ujian')->orderBy('nama')->get();
+        return view('admin.peserta.create', compact('groups', 'packages'));
     }
 
     /**
@@ -67,6 +68,7 @@ class PesertaController extends Controller
             'group_id'   => 'required|exists:groups,id',
             'category'   => 'required|string|max:50',
             'is_active'  => 'nullable|boolean',
+            'assigned_package_id' => 'nullable|exists:tryout_packages,id',
         ], [
             'name.required'       => 'Nama wajib diisi.',
             'email.email'         => 'Format email tidak valid.',
@@ -93,6 +95,7 @@ class PesertaController extends Controller
             'group_id'   => $validated['group_id'],
             'category'   => $validated['category'],
             'is_active'  => $request->boolean('is_active', true),
+            'assigned_package_id' => $validated['assigned_package_id'] ?? null,
         ]);
 
         return redirect()->route('admin.peserta.index')
@@ -106,8 +109,9 @@ class PesertaController extends Controller
     {
         abort_if($peserta->role !== 'peserta', 404);
         $groups = \App\Models\Group::all();
-
-        return view('admin.peserta.edit', compact('peserta', 'groups'));
+        $packages = \App\Models\TryoutPackage::orderBy('jenis_ujian')->orderBy('nama')->get();
+ 
+        return view('admin.peserta.edit', compact('peserta', 'groups', 'packages'));
     }
 
     /**
@@ -126,6 +130,7 @@ class PesertaController extends Controller
             'group_id'   => 'required|exists:groups,id',
             'category'   => 'required|string|max:50',
             'is_active'  => 'nullable|boolean',
+            'assigned_package_id' => 'nullable|exists:tryout_packages,id',
         ], [
             'name.required'     => 'Nama wajib diisi.',
             'email.email'       => 'Format email tidak valid.',
@@ -147,6 +152,7 @@ class PesertaController extends Controller
             'group_id'   => $validated['group_id'],
             'category'   => $validated['category'],
             'is_active'  => $request->boolean('is_active', true),
+            'assigned_package_id' => $validated['assigned_package_id'] ?? null,
         ]);
 
         return redirect()->route('admin.peserta.index')

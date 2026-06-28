@@ -27,7 +27,7 @@ class AlumniController extends Controller
             'nama'        => 'required|string|max:200',
             'instansi'    => 'required|string|max:300',
             'tahun_lulus' => 'required|integer|min:2000|max:' . (date('Y') + 1),
-            'foto'        => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'foto'        => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
             'urutan'      => 'nullable|integer|min:0',
         ]);
 
@@ -77,7 +77,7 @@ class AlumniController extends Controller
             'nama'        => 'required|string|max:200',
             'instansi'    => 'required|string|max:300',
             'tahun_lulus' => 'required|integer|min:2000|max:' . (date('Y') + 1),
-            'foto'        => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'foto'        => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
             'urutan'      => 'nullable|integer|min:0',
             'hapus_foto'  => 'nullable|boolean',
         ]);

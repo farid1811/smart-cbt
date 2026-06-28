@@ -128,4 +128,21 @@ class ModuleController extends Controller
 
         return redirect()->route('admin.modules.index')->with('success', 'Modul pembelajaran berhasil dihapus.');
     }
+
+    public function streamPdf(LearningModule $module)
+    {
+        if (!$module->pdf_file) {
+            abort(404, 'File PDF tidak ditemukan.');
+        }
+
+        $storagePath = str_replace('storage/', 'public/', $module->pdf_file);
+
+        if (!Storage::exists($storagePath)) {
+            abort(404, 'File PDF tidak ditemukan di storage.');
+        }
+
+        return Storage::response($storagePath, null, [
+            'Content-Disposition' => 'inline; filename="' . basename($module->pdf_file) . '"'
+        ]);
+    }
 }

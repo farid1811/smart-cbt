@@ -159,6 +159,14 @@
                         <li><strong>Isi</strong>: Teks soal, teks pilihan jawaban, pembahasan, atau huruf kunci jawaban (A/B/C/D/E)</li>
                         <li><strong>Jawaban</strong> (Opsional): Bobot skor untuk pilihan jawaban (e.g. 5, 0)</li>
                     </ul>
+                    <div style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid #bfdbfe; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+                        <span style="font-weight: 500; font-size: 0.8rem; color: #1e40af;">
+                            Belum memiliki format Word yang sesuai? Silakan unduh Template Word terlebih dahulu agar proses import berjalan dengan benar.
+                        </span>
+                        <a href="{{ route('admin.tryouts.import.template.word') }}" class="btn btn-secondary btn-sm" style="font-weight:700; font-size:0.75rem; background:#ffffff; border:1px solid #bfdbfe; color:#1e40af; display:inline-flex; align-items:center; gap:0.25rem; text-decoration:none; padding: 0.25rem 0.5rem; border-radius: 4px;">
+                            ⬇ Download Template Word (.docx)
+                        </a>
+                    </div>
                 </div>
 
                 <form method="POST" action="{{ route('admin.tryouts.import.word', $tryout) }}" enctype="multipart/form-data">

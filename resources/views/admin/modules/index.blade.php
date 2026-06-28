@@ -73,7 +73,7 @@
                 <td style="padding: 1rem;">
                     <div style="display:flex; gap:0.35rem; flex-wrap:wrap;">
                         @if($m->pdf_file)
-                            <a href="{{ asset($m->pdf_file) }}" target="_blank" class="badge" style="background:#fef2f2; color:#dc2626; border:1px solid #fecaca; text-decoration:none; font-weight:700;">PDF</a>
+                            <a href="{{ route('admin.modules.pdf', $m) }}" target="_blank" class="badge" style="background:#fef2f2; color:#dc2626; border:1px solid #fecaca; text-decoration:none; font-weight:700;">PDF</a>
                         @endif
                         @if($m->video_url)
                             <a href="{{ $m->video_url }}" target="_blank" class="badge" style="background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; text-decoration:none; font-weight:700;">Video</a>
