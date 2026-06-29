@@ -37,6 +37,7 @@
                 <th>B / S / K</th>
                 <th>Status</th>
                 <th>Waktu</th>
+                <th>Aksi</th>
             </tr>
         </thead>
         <tbody>
@@ -56,9 +57,13 @@
                 <td><strong>{{ $r->skor_tkp }}</strong></td>
                 <td>
                     @php
-                        $color = $r->skor_total >= 70 ? 'var(--success)' : ($r->skor_total >= 50 ? 'var(--warning)' : 'var(--error)');
+                        $isSkd = ($r->tryoutPackage->group === 'SKD');
+                        $maxScore = $isSkd ? 550 : (count($r->category_scores ?? []) * 100);
+                        if ($maxScore <= 0) $maxScore = 100;
+                        $pct = ($r->skor_total / $maxScore) * 100;
+                        $color = $pct >= 70 ? 'var(--success)' : ($pct >= 50 ? 'var(--warning)' : 'var(--error)');
                     @endphp
-                    <strong style="color: {{ $color }}">{{ $r->skor_total }}%</strong>
+                    <strong style="color: {{ $color }}">{{ $r->skor_total }}</strong>
                 </td>
                 <td style="font-size:0.8rem;color:var(--text-muted);font-weight:500;">
                     <span style="color:var(--success);">{{ $r->jumlah_benar }}</span> /
@@ -73,9 +78,12 @@
                     @endif
                 </td>
                 <td style="font-size:0.78rem;color:var(--text-muted);">{{ $r->created_at->format('d/m/Y H:i') }}</td>
+                <td>
+                    <a href="{{ route('admin.rekap.detail', $r->id) }}" class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 0.25rem 0.5rem; font-weight: 600; text-decoration: none;">Lihat Detail</a>
+                </td>
             </tr>
             @empty
-            <tr><td colspan="10"><div class="empty-state"><p style="font-weight: 500;">Belum ada data rekap nilai.</p></div></td></tr>
+            <tr><td colspan="12"><div class="empty-state"><p style="font-weight: 500;">Belum ada data rekap nilai.</p></div></td></tr>
             @endforelse
         </tbody>
     </table>

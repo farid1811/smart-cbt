@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class ExamSession extends Model
 {
@@ -54,7 +55,23 @@ class ExamSession extends Model
     public function getRemainingSecondsAttribute(): int
     {
         $totalDetik = $this->tryoutPackage->durasi_menit * 60;
-        $elapsed = Carbon::now()->diffInSeconds($this->started_at);
+
+        try {
+            $elapsed = DB::table('exam_sessions')
+                ->where('id', $this->id)
+                ->selectRaw('TIMESTAMPDIFF(SECOND, started_at, NOW()) as elapsed')
+                ->value('elapsed');
+        } catch (\Throwable $e) {
+            $elapsed = null;
+        }
+
+        if (is_null($elapsed) || $elapsed < 0) {
+            $elapsed = Carbon::now()->diffInSeconds($this->started_at, false);
+            if ($elapsed < 0) {
+                $elapsed = 0;
+            }
+        }
+
         return max(0, $totalDetik - $elapsed);
     }
 

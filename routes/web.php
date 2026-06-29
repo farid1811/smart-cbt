@@ -62,7 +62,9 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
 
     // Rekap Nilai
     Route::get('/rekap',        [Admin\RekapController::class, 'index'])->name('rekap.index');
+    Route::delete('/rekap/{session}', [Admin\RekapController::class, 'destroy'])->name('rekap.destroy');
     Route::get('/rekap/export', [Admin\RekapController::class, 'exportCsv'])->name('rekap.export');
+    Route::get('/rekap/{result}/detail', [Admin\RekapController::class, 'detail'])->name('rekap.detail');
 
     // Pengaturan — CMS Homepage
     Route::get('/pengaturan/homepage',  [Admin\HomepageController::class, 'index'])->name('homepage.index');

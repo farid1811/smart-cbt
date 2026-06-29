@@ -521,12 +521,17 @@
         </div>
 
         <div class="soal-text-card">
-            @if($question->image)
+            @php
+                $qImg = $question->question_image ?: $question->image;
+            @endphp
+            @if($qImg)
                 <div style="margin-bottom: 1.25rem; text-align: center;">
-                    <img src="{{ asset($question->image) }}" alt="Gambar Soal" style="max-width: 100%; max-height: 380px; height: auto; border-radius: 8px; border: 1px solid var(--border); box-shadow: var(--shadow-sm);">
+                    <img src="{{ asset($qImg) }}" alt="Gambar Soal" style="max-width: 100%; max-height: 380px; height: auto; border-radius: 8px; border: 1px solid var(--border); box-shadow: var(--shadow-sm);">
                 </div>
             @endif
-            <p class="soal-text">{{ $question->soal }}</p>
+            @if($question->soal)
+                <p class="soal-text">{{ $question->soal }}</p>
+            @endif
         </div>
 
         <div class="opsi-list" id="opsiList">
@@ -539,13 +544,24 @@
                 @php 
                     $originalKey = ($mapping && isset($mapping[$visualKey])) ? $mapping[$visualKey] : $visualKey;
                     $opsiText = $question->{'opsi_'.strtolower($originalKey)}; 
+                    $optImg = $question->{'option_'.strtolower($originalKey).'_image'};
                 @endphp
-                @if($opsiText)
+                @if($opsiText || $optImg)
                 <div class="opsi-item {{ $selectedJawaban === $visualKey ? 'selected' : '' }}"
                      id="opsi-{{ $visualKey }}"
-                     onclick="pilihJawaban('{{ $visualKey }}')">
-                     <div class="opsi-label">{{ $visualKey }}</div>
-                     <div class="opsi-text">{{ $opsiText }}</div>
+                     onclick="pilihJawaban('{{ $visualKey }}')"
+                     style="display: flex; flex-direction: column; align-items: flex-start; gap: 0.5rem; padding: 0.85rem 1.25rem;">
+                     <div style="display: flex; align-items: center; gap: 0.75rem; width: 100%;">
+                         <div class="opsi-label">{{ $visualKey }}</div>
+                         @if($opsiText)
+                             <div class="opsi-text" style="flex: 1;">{{ $opsiText }}</div>
+                         @endif
+                     </div>
+                     @if($optImg)
+                         <div style="margin-top: 0.25rem; padding-left: 2.25rem; width: 100%;">
+                             <img src="{{ asset($optImg) }}" alt="Gambar Opsi {{ $visualKey }}" style="max-height: 120px; max-width: 100%; height: auto; border-radius: 6px; border: 1px solid var(--border);">
+                         </div>
+                     @endif
                 </div>
                 @endif
             @endforeach
@@ -687,10 +703,15 @@ if (isSEB) {
 }
 
 // ── Timer ─────────────────────────────────────────────────────
-let timeLeft = REMAINING_SEC;
+const PAGE_LOAD_TIME = Date.now();
+const TOTAL_REMAINING = REMAINING_SEC;
 
 function updateTimer() {
+    const elapsed = Math.floor((Date.now() - PAGE_LOAD_TIME) / 1000);
+    const timeLeft = Math.max(0, TOTAL_REMAINING - elapsed);
+
     if (timeLeft <= 0) {
+        document.getElementById('timerDisplay').textContent = '00:00';
         if (!autoSubmitted) {
             autoSubmitted = true;
             autoSubmit();
@@ -712,11 +733,11 @@ function updateTimer() {
     document.getElementById('timerDisplay').textContent = display;
 
     const box = document.getElementById('timerBox');
-    box.classList.remove('warning','danger');
-    if (timeLeft <= 60)       box.classList.add('danger');
-    else if (timeLeft <= 300) box.classList.add('warning');
-
-    timeLeft--;
+    if (box) {
+        box.classList.remove('warning','danger');
+        if (timeLeft <= 60)       box.classList.add('danger');
+        else if (timeLeft <= 300) box.classList.add('warning');
+    }
 }
 
 updateTimer();

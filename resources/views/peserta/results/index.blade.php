@@ -213,15 +213,20 @@
                 ->distinct('user_id')
                 ->count('user_id');
 
-            // Select color based on score
-            $scoreColor = $r->skor_total >= 70 ? 'var(--success)' : ($r->skor_total >= 50 ? '#D97706' : 'var(--error)');
-            
             // Check test group format
             $isSkd = ($r->tryoutPackage->group === 'SKD');
+
+            // Calculate max score and percentage
+            $maxScore = $isSkd ? 550 : (count($r->category_scores ?? []) * 100);
+            if ($maxScore <= 0) $maxScore = 100;
+            $pct = min(100, ($r->skor_total / $maxScore) * 100);
+
+            // Select color based on percentage
+            $scoreColor = $pct >= 70 ? 'var(--success)' : ($pct >= 50 ? '#D97706' : 'var(--error)');
         @endphp
         <div class="result-card">
             {{-- Circular Gauge --}}
-            <div class="circular-gauge" style="background: conic-gradient({{ $scoreColor }} {{ $r->skor_total * 3.6 }}deg, var(--surface2) 0deg);">
+            <div class="circular-gauge" style="background: conic-gradient({{ $scoreColor }} {{ $pct * 3.6 }}deg, var(--surface2) 0deg);">
                 <div class="circular-gauge-inner">
                     <span class="gauge-value" style="color: {{ $scoreColor }};">{{ $r->skor_total }}</span>
                     <span class="gauge-label">Skor</span>

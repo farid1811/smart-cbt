@@ -336,7 +336,7 @@
             </svg>
         </div>
         <div class="stat-info">
-            <span class="stat-label">Total Modul</span>
+            <span class="stat-label">TOTAL MODUL</span>
             <span class="stat-value">{{ $totalModules }}</span>
         </div>
     </div>
@@ -350,7 +350,7 @@
             </svg>
         </div>
         <div class="stat-info">
-            <span class="stat-label">Drill Soal</span>
+            <span class="stat-label">TOTAL DRILL</span>
             <span class="stat-value">{{ $totalDrills }}</span>
         </div>
     </div>
@@ -364,7 +364,7 @@
             </svg>
         </div>
         <div class="stat-info">
-            <span class="stat-label">Tryout</span>
+            <span class="stat-label">TOTAL TRYOUT</span>
             <span class="stat-value">{{ $totalTryouts }}</span>
         </div>
     </div>
@@ -379,8 +379,8 @@
             </svg>
         </div>
         <div class="stat-info">
-            <span class="stat-label">Skor Tertinggi</span>
-            <span class="stat-value">{{ $highestScore }}%</span>
+            <span class="stat-label">NILAI TERTINGGI</span>
+            <span class="stat-value">{{ $highestScore }}</span>
         </div>
     </div>
 </div>
@@ -525,7 +525,7 @@
             <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.78rem; color:var(--text-muted); background:var(--surface2); padding:0.5rem 0.75rem; border-radius:var(--radius-sm);">
                 <span>Percobaan: <strong style="color:var(--text);">{{ $attemptsCount }} / {{ $limit }}</strong></span>
                 @if($attempts->isNotEmpty())
-                     <span>Terbaik: <strong style="color:#059669; font-weight:700;">{{ $attempts->max('score') }}%</strong></span>
+                     <span>Terbaik: <strong style="color:#059669; font-weight:700;">{{ $attempts->max('score') }}</strong></span>
                 @endif
             </div>
 
@@ -600,7 +600,7 @@
             <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.78rem; color:var(--text-muted); background:var(--surface2); padding:0.5rem 0.75rem; border-radius:var(--radius-sm);">
                 <span>Percobaan: <strong style="color:var(--text);">{{ $attemptsCount }} / {{ $limit }}</strong></span>
                 @if($attempts->isNotEmpty())
-                     <span>Terbaik: <strong style="color:#059669; font-weight:700;">{{ $attempts->max('score') }}%</strong></span>
+                     <span>Terbaik: <strong style="color:#059669; font-weight:700;">{{ $attempts->max('score') }}</strong></span>
                 @endif
             </div>
 
@@ -667,9 +667,13 @@
                         <td style="text-align:center;">
                             @php
                                 $score = $r->skor_total;
-                                $scoreColor = $score >= 70 ? 'var(--success)' : ($score >= 50 ? '#D97706' : 'var(--error)');
+                                $isSkd = ($r->tryoutPackage->group === 'SKD');
+                                $maxScore = $isSkd ? 550 : (count($r->category_scores ?? []) * 100);
+                                if ($maxScore <= 0) $maxScore = 100;
+                                $pct = ($score / $maxScore) * 100;
+                                $scoreColor = $pct >= 70 ? 'var(--success)' : ($pct >= 50 ? '#D97706' : 'var(--error)');
                             @endphp
-                            <span style="font-family:'Outfit', sans-serif; font-weight:800;font-size:1.15rem;color:{{ $scoreColor }};">{{ $score }}%</span>
+                            <span style="font-family:'Outfit', sans-serif; font-weight:800;font-size:1.15rem;color:{{ $scoreColor }};">{{ $score }}</span>
                         </td>
                         <td>
                             <span style="color:var(--success);font-weight:700;">{{ $r->jumlah_benar }}</span>

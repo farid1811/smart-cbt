@@ -270,7 +270,7 @@
                 @if($bestScore !== null)
                     <span class="best-score-capsule">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-                        Terbaik: {{ $bestScore }}%
+                        Terbaik: {{ $bestScore }}
                     </span>
                 @else
                     <span style="color:var(--text-light); font-size:0.8rem; font-style:italic;">Belum Ada</span>

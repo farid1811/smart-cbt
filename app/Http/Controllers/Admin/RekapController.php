@@ -118,4 +118,37 @@ class RekapController extends Controller
 
         return response()->stream($callback, 200, $headers);
     }
+
+    public function detail(Result $result)
+    {
+        $result->load(['user', 'tryoutPackage', 'examSession']);
+        $session = $result->examSession;
+        
+        $answers = \App\Models\ExamAnswer::where('exam_session_id', $session->id)
+            ->with(['question.category', 'question.questionCode'])
+            ->get();
+            
+        $soalOrder = $session->soal_order;
+        if (!empty($soalOrder)) {
+            $answers = $answers->sortBy(function($ans) use ($soalOrder) {
+                $pos = array_search($ans->question_id, $soalOrder);
+                return $pos !== false ? $pos : 9999;
+            })->values();
+        } else {
+            $answers = $answers->sortBy('question.urutan')->values();
+        }
+
+        $incorrectAnswers = $answers->filter(fn($ans) => !$ans->isBenar());
+        $categoryErrors = [];
+        foreach ($incorrectAnswers as $ans) {
+            $catName = $ans->question->category->name ?? 'Tanpa Kategori';
+            if (!isset($categoryErrors[$catName])) {
+                $categoryErrors[$catName] = 0;
+            }
+            $categoryErrors[$catName]++;
+        }
+        arsort($categoryErrors);
+
+        return view('admin.rekap.detail', compact('result', 'answers', 'categoryErrors'));
+    }
 }

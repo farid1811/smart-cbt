@@ -489,8 +489,64 @@ class ImportController extends Controller
         $cell->registerXPathNamespace('r', 'http://schemas.openxmlformats.org/officeDocument/2006/relationships');
         $cell->registerXPathNamespace('pic', 'http://schemas.openxmlformats.org/drawingml/2006/picture');
 
-        // Scan seluruh atribut secara rekursif untuk mencari value berformat 'rId...'
+        // Cari semua rId dari berbagai kemungkinan elemen dan atribut
         $rIds = [];
+
+        // 1. Cari r:embed di <a:blip>
+        $blips = $cell->xpath('.//a:blip');
+        if (!empty($blips)) {
+            foreach ($blips as $blip) {
+                $attrs = $blip->attributes('http://schemas.openxmlformats.org/officeDocument/2006/relationships');
+                if (isset($attrs['embed'])) {
+                    $rIds[] = (string)$attrs['embed'];
+                }
+                if (isset($attrs['link'])) {
+                    $rIds[] = (string)$attrs['link'];
+                }
+            }
+        }
+
+        // 2. Cari r:id di <v:imagedata> (VML Shapes)
+        $vmls = $cell->xpath('.//v:imagedata');
+        if (!empty($vmls)) {
+            foreach ($vmls as $vml) {
+                $attrs = $vml->attributes('http://schemas.openxmlformats.org/officeDocument/2006/relationships');
+                if (isset($attrs['id'])) {
+                    $rIds[] = (string)$attrs['id'];
+                }
+                if (isset($attrs['href'])) {
+                    $rIds[] = (string)$attrs['href'];
+                }
+            }
+        }
+
+        // 3. Cari r:id di <w:drawing> secara rekursif
+        $drawings = $cell->xpath('.//w:drawing');
+        if (!empty($drawings)) {
+            foreach ($drawings as $drawing) {
+                $drawing->registerXPathNamespace('r', 'http://schemas.openxmlformats.org/officeDocument/2006/relationships');
+                $attrs = $drawing->xpath('.//@r:*');
+                foreach ($attrs as $attr) {
+                    $val = (string)$attr;
+                    if (strpos($val, 'rId') === 0) {
+                        $rIds[] = $val;
+                    }
+                }
+            }
+        }
+
+        // 4. Scan seluruh atribut yang memiliki namespace 'r' secara umum
+        $rAttrs = $cell->xpath('.//@r:*');
+        if (!empty($rAttrs)) {
+            foreach ($rAttrs as $attr) {
+                $val = (string)$attr;
+                if (strpos($val, 'rId') === 0) {
+                    $rIds[] = $val;
+                }
+            }
+        }
+
+        // 5. Scan seluruh atribut secara umum (fallback)
         $allAttributes = $cell->xpath('.//@*');
         if (!empty($allAttributes)) {
             foreach ($allAttributes as $attr) {
@@ -521,6 +577,25 @@ class ImportController extends Controller
                     }
                 }
             }
+        }
+
+        // Filter: Jika ada gambar berformat web-friendly (png, jpg, jpeg, gif, webp, svg), 
+        // kita abaikan wmf/emf agar tidak merusak tampilan browser.
+        $hasWebFriendly = false;
+        foreach ($images as $img) {
+            $imgExt = strtolower(pathinfo($img, PATHINFO_EXTENSION));
+            if (in_array($imgExt, ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'])) {
+                $hasWebFriendly = true;
+                break;
+            }
+        }
+
+        if ($hasWebFriendly) {
+            $images = array_filter($images, function($img) {
+                $imgExt = strtolower(pathinfo($img, PATHINFO_EXTENSION));
+                return !in_array($imgExt, ['wmf', 'emf']);
+            });
+            $images = array_values($images);
         }
 
         return $images;

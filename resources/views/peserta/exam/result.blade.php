@@ -290,6 +290,28 @@
         </p>
     </div>
 
+    {{-- Summary --}}
+    <div class="summary-cards">
+        <div class="sum-card">
+            <div class="sum-val" style="color:#10b981;">{{ $result->jumlah_benar }}</div>
+            <div class="sum-lbl">✅ Jawaban Benar</div>
+        </div>
+        <div class="sum-card">
+            <div class="sum-val" style="color:#ef4444;">{{ $result->jumlah_salah }}</div>
+            <div class="sum-lbl">❌ Jawaban Salah</div>
+        </div>
+        <div class="sum-card">
+            <div class="sum-val" style="color:var(--text-muted);">{{ $result->jumlah_kosong }}</div>
+            <div class="sum-lbl">⬜ Tidak Dijawab</div>
+        </div>
+    </div>
+
+    {{-- Actions --}}
+    <div class="actions" style="margin-bottom: 2.5rem;">
+        <a href="{{ route('peserta.dashboard') }}" class="btn" style="font-weight:700;">🏠 Dashboard</a>
+        <a href="{{ route('peserta.results.index') }}" class="btn btn-primary" style="font-weight:700;">📊 Riwayat Nilai</a>
+    </div>
+
     {{-- Detailed Score Breakdown --}}
     <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 0.75rem;">📊 Rincian Nilai per Subtest</h3>
     <div class="cat-grid">
@@ -309,7 +331,7 @@
                 <div class="cat-name">{{ $data['name'] }}</div>
                 <div class="cat-kode" style="color:{{ $clr }}; font-weight:800;">{{ $data['kode'] }}</div>
                 <div class="cat-score" style="color:{{ $clr }};">
-                    {{ $data['score'] }}<span style="font-size:1rem; font-weight:500;">{{ $isSkd ? '' : '%' }}</span>
+                    {{ $data['score'] }}
                 </div>
                 <div style="font-size: 0.75rem; color:var(--text-muted); margin-top: 0.25rem;">
                     B: {{ $data['benar'] }} | S: {{ $data['salah'] }} | K: {{ $data['kosong'] }}
@@ -318,22 +340,6 @@
             </div>
             @endforeach
         @endif
-    </div>
-
-    {{-- Summary --}}
-    <div class="summary-cards">
-        <div class="sum-card">
-            <div class="sum-val" style="color:#10b981;">{{ $result->jumlah_benar }}</div>
-            <div class="sum-lbl">✅ Jawaban Benar</div>
-        </div>
-        <div class="sum-card">
-            <div class="sum-val" style="color:#ef4444;">{{ $result->jumlah_salah }}</div>
-            <div class="sum-lbl">❌ Jawaban Salah</div>
-        </div>
-        <div class="sum-card">
-            <div class="sum-val" style="color:var(--text-muted);">{{ $result->jumlah_kosong }}</div>
-            <div class="sum-lbl">⬜ Tidak Dijawab</div>
-        </div>
     </div>
 
     {{-- Pembahasan --}}
@@ -368,21 +374,23 @@
             <div class="soal-item-header" onclick="togglePembahasan({{ $i }})">
                 <div class="soal-status status-{{ $status }}"></div>
                 <span class="badge-code">{{ $q->questionCode?->code ?? '—' }}</span>
-                <span style="flex:1; font-size:0.85rem; font-weight:500; color:#334155;">{{ Str::limit(strip_tags($q->soal), 70) }}</span>
-                <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">
+                <span style="flex:1; font-size:0.85rem; font-weight:700; color:#334155;">Soal #{{ $i + 1 }} — {{ Str::limit(strip_tags($q->soal), 70) ?: 'Soal Bergambar' }}</span>
+                <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600; margin-right:0.5rem;">
                     @if($kosong) ⬜ Kosong
                     @elseif($benar) ✅ Benar
-                    @else ❌ Salah (Pilihan: {{ $answer->jawaban }}, Kunci: {{ $visualCorrectKey }})
+                    @else ❌ Salah (Pilihan: {{ $answer->jawaban ?? '-' }}, Kunci: {{ $visualCorrectKey }})
                     @endif
                 </span>
-                <span style="font-size:0.8rem; color:var(--text-muted); font-weight:bold; margin-left:0.5rem;" id="arrow-{{ $i }}">▼</span>
+                <span style="font-size:0.8rem; color:var(--text-muted); font-weight:bold;" id="arrow-{{ $i }}">▲</span>
             </div>
-            <div class="soal-item-body" id="body-{{ $i }}">
+            <div class="soal-item-body open" id="body-{{ $i }}">
                 <div style="font-size:0.72rem; color:var(--text-muted); font-weight:700; margin-bottom:0.5rem; text-transform:uppercase;">
                     Kategori: {{ $q->category->name ?? '—' }}
                 </div>
                 
-                <p style="font-size:0.9rem; margin-bottom:1rem; line-height:1.6; color:#0f172a; white-space: pre-wrap;">{{ $q->soal }}</p>
+                @if($q->soal)
+                    <p style="font-size:0.9rem; margin-bottom:1rem; line-height:1.6; color:#0f172a; white-space: pre-wrap;">{{ $q->soal }}</p>
+                @endif
                 
                 @if($q->question_image || $q->image)
                     @php $qImg = $q->question_image ?: $q->image; @endphp
@@ -397,19 +405,28 @@
                     @php
                         $originalKey = ($mapping && isset($mapping[$visualKey])) ? $mapping[$visualKey] : $visualKey;
                         $opsiText = $q->{'opsi_'.strtolower($originalKey)};
-                        if (!$opsiText) continue;
+                        $optImg = $q->{'option_'.strtolower($originalKey).'_image'};
+                        
+                        if (!$opsiText && !$optImg) continue;
 
                         $isCorrectOption = $originalKey === $q->jawaban_benar;
                         $isPilihan = $visualKey === $answer->jawaban;
                     @endphp
                     <div class="opsi-row {{ $isCorrectOption ? 'opsi-correct' : ($isPilihan && !$isCorrectOption ? 'opsi-wrong' : '') }}">
-                        <div style="display:flex; align-items:center; width:100%;">
+                        <div style="display:flex; align-items:center; width:100%; gap:0.5rem; flex-wrap:wrap;">
                             <strong style="min-width:18px;">{{ $visualKey }}.</strong>
-                            <span>{{ $opsiText }}</span>
-                            @if($isCorrectOption) <span style="margin-left:auto; font-size:0.7rem; color:#10b981; font-weight:700;">✓ Benar</span> @endif
-                            @if($isPilihan && !$isCorrectOption) <span style="margin-left:auto; font-size:0.7rem; color:#ef4444; font-weight:700;">✗ Pilihan Anda</span> @endif
+                            @if($opsiText)
+                                <span>{{ $opsiText }}</span>
+                            @endif
+                            
+                            @if($isCorrectOption && $isPilihan) 
+                                <span style="margin-left:auto; font-size:0.7rem; color:#10b981; font-weight:700;">✓ Pilihan Anda & Benar</span>
+                            @elseif($isCorrectOption) 
+                                <span style="margin-left:auto; font-size:0.7rem; color:#10b981; font-weight:700;">✓ Jawaban Benar</span> 
+                            @elseif($isPilihan) 
+                                <span style="margin-left:auto; font-size:0.7rem; color:#ef4444; font-weight:700;">✗ Pilihan Anda</span> 
+                            @endif
                         </div>
-                        @php $optImg = $q->{'option_'.strtolower($originalKey).'_image'}; @endphp
                         @if($optImg)
                             <div style="margin-top:0.35rem; padding-left:18px;">
                                 <img src="{{ asset($optImg) }}" alt="Gambar Opsi {{ $visualKey }}" style="max-height:80px; border-radius:4px; border:1px solid var(--border);">
@@ -434,12 +451,6 @@
             </div>
         </div>
         @endforeach
-    </div>
-
-    {{-- Actions --}}
-    <div class="actions">
-        <a href="{{ route('peserta.dashboard') }}" class="btn" style="font-weight:700;">🏠 Dashboard</a>
-        <a href="{{ route('peserta.results.index') }}" class="btn btn-primary" style="font-weight:700;">📊 Riwayat Nilai</a>
     </div>
 </div>
 

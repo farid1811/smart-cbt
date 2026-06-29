@@ -167,7 +167,7 @@
                 <!-- Teks Soal -->
                 <div class="field-group">
                     <label>Isi Pertanyaan Soal</label>
-                    <textarea name="q[{{ $index }}][soal]" class="form-control" rows="3" required>{{ $q['soal'] }}</textarea>
+                    <textarea name="q[{{ $index }}][soal]" class="form-control" rows="3" {{ empty($q['question_image']) ? 'required' : '' }}>{{ $q['soal'] }}</textarea>
                     @if(!empty($q['question_image']))
                         <div class="image-preview">
                             <img src="{{ asset($q['question_image']) }}" alt="Gambar Soal">
@@ -183,7 +183,7 @@
                         @foreach(['a', 'b', 'c', 'd', 'e'] as $lbl)
                             <div class="option-row">
                                 <span class="option-label">{{ strtoupper($lbl) }}</span>
-                                <input type="text" name="q[{{ $index }}][opsi_{{ $lbl }}]" class="form-control" placeholder="Pilihan {{ strtoupper($lbl) }}" value="{{ $q['opsi_' . $lbl] ?? '' }}" {{ $lbl !== 'e' ? 'required' : '' }}>
+                                <input type="text" name="q[{{ $index }}][opsi_{{ $lbl }}]" class="form-control" placeholder="Pilihan {{ strtoupper($lbl) }}" value="{{ $q['opsi_' . $lbl] ?? '' }}" {{ ($lbl !== 'e' && empty($q['option_' . $lbl . '_image'])) ? 'required' : '' }}>
                                 <input type="number" name="q[{{ $index }}][score_{{ $lbl }}]" class="form-control option-score" placeholder="Skor" value="{{ $q['score_' . $lbl] ?? 0 }}" required min="0" max="100">
                             </div>
                             @if(!empty($q['option_' . $lbl . '_image']))
