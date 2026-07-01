@@ -406,7 +406,7 @@ class ExamController extends Controller
                 $codeScore = $codePoints;
                 $skorTotal += $codeScore;
             } else {
-                $codeScore = $totalCodeQuestions > 0 ? round(($codeBenar / $totalCodeQuestions) * 100, 2) : 0;
+                $codeScore = $codeBenar * 5;
                 $skorTotal += $codeScore;
             }
 

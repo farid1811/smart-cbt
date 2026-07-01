@@ -290,7 +290,7 @@ class WordImportTest extends TestCase
         @unlink($tempFile);
 
         $response->assertRedirect();
-        $response->assertSessionHas('error', "Gagal mengimpor: Tidak ditemukan format soal yang sesuai.");
+        $response->assertSessionHas('error', "Format Word tidak sesuai dengan Template Import Smart CBT. Silakan unduh Template Word terlebih dahulu dan sesuaikan struktur dokumen sebelum melakukan import.");
     }
 
     public function test_word_import_figural_image_only_question(): void
@@ -491,7 +491,7 @@ class WordImportTest extends TestCase
         @unlink($tempFile);
 
         $response->assertRedirect();
-        $response->assertSessionHas('error', "Gagal mengimpor: Tidak ditemukan format soal yang sesuai.");
+        $response->assertSessionHas('error', "Format Word tidak sesuai dengan Template Import Smart CBT. Silakan unduh Template Word terlebih dahulu dan sesuaikan struktur dokumen sebelum melakukan import.");
     }
 
     public function test_word_table_import_explanation_and_kunci(): void

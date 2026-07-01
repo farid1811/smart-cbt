@@ -668,7 +668,21 @@
                             @php
                                 $score = $r->skor_total;
                                 $isSkd = ($r->tryoutPackage->group === 'SKD');
-                                $maxScore = $isSkd ? 550 : (count($r->category_scores ?? []) * 100);
+                                if ($isSkd) {
+                                    $maxScore = 550;
+                                } else {
+                                    $totalQ = 0;
+                                    if ($r->category_scores) {
+                                        $scoreArray = is_string($r->category_scores) ? json_decode($r->category_scores, true) : $r->category_scores;
+                                        foreach ($scoreArray as $data) {
+                                            $totalQ += $data['total'] ?? 0;
+                                        }
+                                    }
+                                    if ($totalQ <= 0) {
+                                        $totalQ = $r->examSession->answers->count();
+                                    }
+                                    $maxScore = $totalQ * 5;
+                                }
                                 if ($maxScore <= 0) $maxScore = 100;
                                 $pct = ($score / $maxScore) * 100;
                                 $scoreColor = $pct >= 70 ? 'var(--success)' : ($pct >= 50 ? '#D97706' : 'var(--error)');

@@ -116,6 +116,7 @@ class QuestionController extends Controller
         $data['opsi_b'] = $data['opsi_b'] ?? '';
         $data['opsi_c'] = $data['opsi_c'] ?? '';
         $data['opsi_d'] = $data['opsi_d'] ?? '';
+        $data['pembahasan'] = $request->input('pembahasan');
         
         $data['score_a'] = (int)($request->input('score_a') ?? 0);
         $data['score_b'] = (int)($request->input('score_b') ?? 0);
@@ -197,6 +198,7 @@ class QuestionController extends Controller
         $data['opsi_b'] = $data['opsi_b'] ?? '';
         $data['opsi_c'] = $data['opsi_c'] ?? '';
         $data['opsi_d'] = $data['opsi_d'] ?? '';
+        $data['pembahasan'] = $request->input('pembahasan');
 
         $data['score_a'] = (int)($request->input('score_a') ?? 0);
         $data['score_b'] = (int)($request->input('score_b') ?? 0);

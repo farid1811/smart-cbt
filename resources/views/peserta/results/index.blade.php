@@ -217,7 +217,21 @@
             $isSkd = ($r->tryoutPackage->group === 'SKD');
 
             // Calculate max score and percentage
-            $maxScore = $isSkd ? 550 : (count($r->category_scores ?? []) * 100);
+            if ($isSkd) {
+                $maxScore = 550;
+            } else {
+                $totalQ = 0;
+                if ($r->category_scores) {
+                    $scoreArray = is_string($r->category_scores) ? json_decode($r->category_scores, true) : $r->category_scores;
+                    foreach ($scoreArray as $data) {
+                        $totalQ += $data['total'] ?? 0;
+                    }
+                }
+                if ($totalQ <= 0) {
+                    $totalQ = $r->examSession->answers->count();
+                }
+                $maxScore = $totalQ * 5;
+            }
             if ($maxScore <= 0) $maxScore = 100;
             $pct = min(100, ($r->skor_total / $maxScore) * 100);
 
@@ -274,16 +288,16 @@
                                 elseif ($data['kode'] === 'TKP') { $badgeClr = 'var(--success)'; $badgeBg = '#ECFDF5'; }
                             @endphp
                             <span class="breakdown-pill" style="background:{{ $badgeBg }}; color:{{ $badgeClr }}; border-color:transparent;">
-                                <strong>{{ $data['kode'] }}:</strong> {{ $data['score'] }}{{ $isSkd ? '' : '%' }}
+                                <strong>{{ $data['kode'] }}:</strong> {{ $data['score'] }}
                             </span>
                         @endforeach
                     </div>
                 @else
                     {{-- Fallback --}}
                     <div class="score-breakdown-row">
-                        <span class="breakdown-pill" style="background:#EFF6FF; color:var(--primary); border-color:transparent;"><strong>TWK:</strong> {{ $r->skor_twk }}%</span>
-                        <span class="breakdown-pill" style="background:#F5F3FF; color:#6D28D9; border-color:transparent;"><strong>TIU:</strong> {{ $r->skor_tiu }}%</span>
-                        <span class="breakdown-pill" style="background:#ECFDF5; color:var(--success); border-color:transparent;"><strong>TKP:</strong> {{ $r->skor_tkp }}%</span>
+                        <span class="breakdown-pill" style="background:#EFF6FF; color:var(--primary); border-color:transparent;"><strong>TWK:</strong> {{ $r->skor_twk }}</span>
+                        <span class="breakdown-pill" style="background:#F5F3FF; color:#6D28D9; border-color:transparent;"><strong>TIU:</strong> {{ $r->skor_tiu }}</span>
+                        <span class="breakdown-pill" style="background:#ECFDF5; color:var(--success); border-color:transparent;"><strong>TKP:</strong> {{ $r->skor_tkp }}</span>
                     </div>
                 @endif
             </div>

@@ -706,9 +706,21 @@ if (isSEB) {
 const PAGE_LOAD_TIME = Date.now();
 const TOTAL_REMAINING = REMAINING_SEC;
 
+let examEndTime = sessionStorage.getItem('exam_end_time_' + SESSION_ID);
+if (!examEndTime) {
+    examEndTime = Date.now() + (TOTAL_REMAINING * 1000);
+    sessionStorage.setItem('exam_end_time_' + SESSION_ID, examEndTime);
+} else {
+    // Pengaman: jika nilai REMAINING_SEC dari server lebih kecil, sinkronkan kembali
+    const serverEndTime = Date.now() + (TOTAL_REMAINING * 1000);
+    if (Math.abs(examEndTime - serverEndTime) > 15000) {
+        examEndTime = serverEndTime;
+        sessionStorage.setItem('exam_end_time_' + SESSION_ID, examEndTime);
+    }
+}
+
 function updateTimer() {
-    const elapsed = Math.floor((Date.now() - PAGE_LOAD_TIME) / 1000);
-    const timeLeft = Math.max(0, TOTAL_REMAINING - elapsed);
+    const timeLeft = Math.max(0, Math.floor((examEndTime - Date.now()) / 1000));
 
     if (timeLeft <= 0) {
         document.getElementById('timerDisplay').textContent = '00:00';
@@ -745,8 +757,18 @@ const timerInterval = setInterval(updateTimer, 1000);
 
 async function autoSubmit() {
     clearInterval(timerInterval);
+    sessionStorage.removeItem('exam_end_time_' + SESSION_ID);
     document.getElementById('timerDisplay').textContent = '00:00';
     showSaveIndicator('⏰ Waktu habis! Mengumpulkan...', 'saved');
+    
+    // Simpan jawaban terakhir sebelum submit otomatis
+    clearTimeout(saveTimeout);
+    try {
+        await performSave();
+    } catch(e) {
+        console.error("Gagal auto-save:", e);
+    }
+    
     await doSubmit();
 }
 
@@ -768,27 +790,34 @@ function pilihJawaban(opsi) {
     saveJawaban();
 }
 
+async function performSave() {
+    try {
+        const res = await fetch(SAVE_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
+            body: JSON.stringify({ question_id: QUESTION_ID, jawaban: selectedJawaban || null })
+        });
+        const data = await res.json();
+
+        if (data.redirect) {
+            window.location.href = data.redirect;
+            return;
+        }
+
+        showSaveIndicator('Tersimpan', 'saved');
+    } catch(e) {
+        showSaveIndicator('Gagal menyimpan', 'error');
+        throw e;
+    }
+}
+
 function saveJawaban() {
     clearTimeout(saveTimeout);
     showSaveIndicator('💾 Menyimpan...', '');
     saveTimeout = setTimeout(async () => {
         try {
-            const res = await fetch(SAVE_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
-                body: JSON.stringify({ question_id: QUESTION_ID, jawaban: selectedJawaban || null })
-            });
-            const data = await res.json();
-
-            if (data.redirect) {
-                window.location.href = data.redirect;
-                return;
-            }
-
-            showSaveIndicator('Tersimpan', 'saved');
-        } catch(e) {
-            showSaveIndicator('Gagal menyimpan', 'error');
-        }
+            await performSave();
+        } catch(e) {}
     }, 400);
 }
 
@@ -827,12 +856,22 @@ function closeModal() { document.getElementById('modalOverlay').classList.remove
 async function submitUjian() {
     const btn = document.getElementById('btnConfirmSubmit');
     btn.disabled = true;
-    btn.textContent = 'Mengumpulkan...';
+    btn.textContent = 'Menyimpan & Mengumpulkan...';
+    
+    // Hentikan debounced save, simpan jawaban saat ini secara instan & sinkron
+    clearTimeout(saveTimeout);
+    try {
+        await performSave();
+    } catch(e) {
+        console.error("Gagal menyimpan jawaban terakhir sebelum submit:", e);
+    }
+    
     await doSubmit();
 }
 
 async function doSubmit() {
     try {
+        sessionStorage.removeItem('exam_end_time_' + SESSION_ID);
         const res = await fetch(SUBMIT_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },

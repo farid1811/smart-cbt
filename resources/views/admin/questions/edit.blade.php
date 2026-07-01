@@ -21,7 +21,7 @@
 @section('content')
 <div class="form-card" style="max-width:880px; margin: 0 auto; background:#fff; padding:2rem; border-radius:12px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);">
     <h3 style="font-weight:800; color:#0f172a; margin-bottom:1.5rem;">Edit Soal #{{ $question->urutan }}</h3>
-    <form method="POST" action="{{ route('admin.questions.update', $question) }}" enctype="multipart/form-data">
+    <form id="questionForm" method="POST" action="{{ route('admin.questions.update', $question) }}" enctype="multipart/form-data">
         @csrf
         @method('PUT')
         
@@ -278,16 +278,18 @@
             }
         });
 
-        var form = document.querySelector('form');
-        form.addEventListener('submit', function() {
-            var input = document.getElementById('pembahasanInput');
-            var text = quill.getText().trim();
-            if (text === '') {
-                input.value = '';
-            } else {
-                input.value = quill.root.innerHTML;
-            }
-        });
+        var form = document.getElementById('questionForm');
+        if (form) {
+            form.addEventListener('submit', function() {
+                var input = document.getElementById('pembahasanInput');
+                var html = quill.root.innerHTML;
+                if (html === '<p><br></p>' || html === '<p></p>') {
+                    input.value = '';
+                } else {
+                    input.value = html;
+                }
+            });
+        }
     });
 </script>
 @endpush

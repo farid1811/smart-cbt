@@ -56,20 +56,13 @@ class ExamSession extends Model
     {
         $totalDetik = $this->tryoutPackage->durasi_menit * 60;
 
-        try {
-            $elapsed = DB::table('exam_sessions')
-                ->where('id', $this->id)
-                ->selectRaw('TIMESTAMPDIFF(SECOND, started_at, NOW()) as elapsed')
-                ->value('elapsed');
-        } catch (\Throwable $e) {
-            $elapsed = null;
-        }
-
-        if (is_null($elapsed) || $elapsed < 0) {
-            $elapsed = Carbon::now()->diffInSeconds($this->started_at, false);
-            if ($elapsed < 0) {
+        if ($this->started_at) {
+            $elapsed = Carbon::now()->diffInSeconds($this->started_at, true);
+            if (Carbon::now()->lt($this->started_at)) {
                 $elapsed = 0;
             }
+        } else {
+            $elapsed = 0;
         }
 
         return max(0, $totalDetik - $elapsed);

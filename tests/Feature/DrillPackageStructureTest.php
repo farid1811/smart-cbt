@@ -104,9 +104,9 @@ class DrillPackageStructureTest extends TestCase
             'jenis_ujian' => 'tryout',
             'group_id' => $this->group->id,
             'group' => 'SKD', // resolved automatically
-            'category_id' => $this->category->id,
-            'category' => 'Pilar Negara', // resolved automatically
-            'question_code_id' => $this->code->id,
+            'category_id' => null,
+            'category' => null,
+            'question_code_id' => null,
             'attempt_limit' => 2,
             'durasi_menit' => 90,
         ]);

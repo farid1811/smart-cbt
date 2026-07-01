@@ -241,7 +241,21 @@
     <div class="result-hero">
         @php
             $isSkd = ($result->tryoutPackage->group === 'SKD');
-            $maxScore = $isSkd ? 550 : (count($result->category_scores ?? []) * 100);
+            if ($isSkd) {
+                $maxScore = 550;
+            } else {
+                $totalQ = 0;
+                if ($result->category_scores) {
+                    $scoreArray = is_string($result->category_scores) ? json_decode($result->category_scores, true) : $result->category_scores;
+                    foreach ($scoreArray as $data) {
+                        $totalQ += $data['total'] ?? 0;
+                    }
+                }
+                if ($totalQ <= 0) {
+                    $totalQ = $result->examSession->answers->count();
+                }
+                $maxScore = $totalQ * 5;
+            }
             if ($maxScore <= 0) $maxScore = 100;
             
             $scoreVal = $result->skor_total;
@@ -325,7 +339,7 @@
                 elseif ($data['kode'] === 'TKP') $clr = '#f59e0b';
                 
                 // percentage for visual bar
-                $pFill = $isSkd ? (($data['score'] / ($data['total'] * 5)) * 100) : $data['score'];
+                $pFill = ($data['total'] > 0) ? (($data['score'] / ($data['total'] * 5)) * 100) : 0;
             @endphp
             <div class="cat-card">
                 <div class="cat-name">{{ $data['name'] }}</div>
@@ -437,11 +451,17 @@
                 </div>
 
                 {{-- Pembahasan --}}
-                @if($q->pembahasan || $q->explanation_image)
+                @php
+                    $hasText = !empty($q->pembahasan) && $q->pembahasan !== '<p><br></p>' && $q->pembahasan !== '<p></p>';
+                    $hasImg = !empty($q->explanation_image);
+                @endphp
+                @if($hasText || $hasImg)
                     <div style="margin-top:1rem; padding:1rem; background:#f1f5f9; border-radius:8px; font-size:0.875rem; color:#334155; line-height:1.6; border:1px solid #e2e8f0;">
                         💡 <strong>Pembahasan:</strong>
-                        <div style="margin-top:0.35rem; white-space: pre-wrap;">{!! $q->pembahasan !!}</div>
-                        @if($q->explanation_image)
+                        @if($hasText)
+                            <div style="margin-top:0.35rem; white-space: pre-wrap;">{!! $q->pembahasan !!}</div>
+                        @endif
+                        @if($hasImg)
                             <div style="margin-top:0.75rem;">
                                 <img src="{{ asset($q->explanation_image) }}" alt="Gambar Pembahasan" style="max-height:160px; border-radius:6px; border:1px solid var(--border);">
                             </div>
